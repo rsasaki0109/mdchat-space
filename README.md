@@ -31,10 +31,10 @@ Japanese screenshots live in [`docs/screenshots/ja/`](docs/screenshots/ja/); see
 
 A **browser-only** demo (no API server) is built by [`.github/workflows/github-pages-demo.yml`](.github/workflows/github-pages-demo.yml), which pushes a static export to the **`gh-pages` branch**. Data lives in `sessionStorage` for that tab only.
 
-1. **Settings → Pages → Build and deployment**: set **Source** to **Deploy from a branch**.
-2. Choose **Branch** `gh-pages`, folder **`/` (root)**. Save. (First run creates the branch.)
-3. Push to `main` or run **Deploy Pages demo** manually. Site: `https://<user>.github.io/<repo>/` (example: `https://rsasaki0109.github.io/mdchat-space/`).
-4. English labels: append **`?lang=en`** to the URL.
+1. Push to `main` (or run **Deploy Pages demo** once) so the **`gh-pages` branch** is created.
+2. **Settings → Pages**: **Source** = **Deploy from a branch**, **Branch** = **`gh-pages`**, folder **`/`**. Save.
+3. If you change workflow or assets, re-run the workflow; the site updates on push to `gh-pages`. Public URL: `https://<user>.github.io/<repo>/` (example: `https://rsasaki0109.github.io/mdchat-space/`).
+4. English labels: append **`?lang=en`**.
 
 Do **not** set Pages **Source** to **GitHub Actions** for this repo unless you switch the workflow back to `deploy-pages`; mismatch causes deploy errors.
 
