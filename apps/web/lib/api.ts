@@ -7,17 +7,26 @@ import type {
   SummarizeResponse,
   ThreadPost,
   ThreadResponse,
+  UpdatePostPayload,
 } from "@/lib/types";
 
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
+function writeHeaders(): Record<string, string> {
+  const key = process.env.NEXT_PUBLIC_MDCHAT_WRITE_KEY;
+  if (key) {
+    return { "X-API-Key": key };
+  }
+  return {};
+}
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
+      ...writeHeaders(),
       ...(init?.headers ?? {}),
     },
     cache: "no-store",
@@ -28,9 +37,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error(detail || `API request failed: ${response.status}`);
   }
 
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
   return response.json() as Promise<T>;
 }
-
 
 export const api = {
   getChannelsTree() {
@@ -43,6 +55,17 @@ export const api = {
     return request<ThreadPost>("/posts", {
       method: "POST",
       body: JSON.stringify(payload),
+    });
+  },
+  updatePost(postId: string, payload: UpdatePostPayload) {
+    return request<ThreadPost>(`/posts/${encodeURIComponent(postId)}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+  },
+  deleteThread(threadRootId: string) {
+    return request<void>(`/posts/${encodeURIComponent(threadRootId)}`, {
+      method: "DELETE",
     });
   },
   getThread(threadId: string) {

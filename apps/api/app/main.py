@@ -10,10 +10,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from sqlalchemy.orm import Session
 
+from .auth import require_write_key
 from .config import settings
 from .db import SessionLocal, get_session, init_db
 from .schemas import (
     PostCreate,
+    PostUpdate,
     ReplyRequest,
     ReplyResponse,
     SearchRequest,
@@ -26,7 +28,15 @@ from .schemas import (
 from .seed import seed_demo_data
 from .services.ai import answer_search, generate_reply, summarize_thread
 from .services.channels import get_channel_tree
-from .services.posts import create_post, get_all_export_posts, get_channel_posts, get_searchable_posts, get_thread
+from .services.posts import (
+    create_post,
+    delete_thread,
+    get_all_export_posts,
+    get_channel_posts,
+    get_searchable_posts,
+    get_thread,
+    update_post,
+)
 from .services.search import search_posts
 
 
@@ -71,8 +81,31 @@ def channel_posts(channel: str, session: Session = Depends(get_session)):
 
 
 @app.post("/posts", response_model=ThreadPost)
-def post_message(payload: PostCreate, session: Session = Depends(get_session)):
+def post_message(
+    payload: PostCreate,
+    session: Session = Depends(get_session),
+    _: None = Depends(require_write_key),
+):
     return create_post(session, payload)
+
+
+@app.patch("/posts/{post_id}", response_model=ThreadPost)
+def patch_post(
+    post_id: str,
+    payload: PostUpdate,
+    session: Session = Depends(get_session),
+    _: None = Depends(require_write_key),
+):
+    return update_post(session, post_id, payload)
+
+
+@app.delete("/posts/{thread_root_id}", status_code=204)
+def remove_thread(
+    thread_root_id: str,
+    session: Session = Depends(get_session),
+    _: None = Depends(require_write_key),
+) -> None:
+    delete_thread(session, thread_root_id)
 
 
 @app.get("/thread/{thread_id}", response_model=ThreadResponse)

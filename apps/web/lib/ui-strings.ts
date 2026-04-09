@@ -37,6 +37,11 @@ export type UiStrings = {
   generateReply: string;
   replySectionTitle: string;
   replySubmit: string;
+  editPost: string;
+  savePost: string;
+  cancelEdit: string;
+  deleteThread: string;
+  deleteThreadConfirm: string;
 };
 
 const ja: UiStrings = {
@@ -78,6 +83,11 @@ const ja: UiStrings = {
   generateReply: "返信生成",
   replySectionTitle: "返信を書く",
   replySubmit: "スレッドに返信",
+  editPost: "編集",
+  savePost: "保存",
+  cancelEdit: "キャンセル",
+  deleteThread: "スレッドを削除",
+  deleteThreadConfirm: "このスレッドとすべての返信を削除します。よろしいですか？",
 };
 
 const en: UiStrings = {
@@ -123,6 +133,11 @@ const en: UiStrings = {
   generateReply: "Draft reply",
   replySectionTitle: "Write a reply",
   replySubmit: "Reply in thread",
+  editPost: "Edit",
+  savePost: "Save",
+  cancelEdit: "Cancel",
+  deleteThread: "Delete thread",
+  deleteThreadConfirm: "Delete this thread and all replies permanently?",
 };
 
 export function getUiStrings(locale: UiLocale): UiStrings {

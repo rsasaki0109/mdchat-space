@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 def _normalize_channel_path(path: str) -> str:
@@ -47,6 +47,37 @@ class PostCreate(BaseModel):
         if not cleaned:
             raise ValueError("body must not be blank")
         return cleaned
+
+
+class PostUpdate(BaseModel):
+    author: str | None = Field(default=None, max_length=120)
+    body: str | None = Field(default=None, min_length=1)
+
+    @field_validator("author")
+    @classmethod
+    def validate_author(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("author must not be blank")
+        return cleaned
+
+    @field_validator("body")
+    @classmethod
+    def validate_body(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("body must not be blank")
+        return cleaned
+
+    @model_validator(mode="after")
+    def require_change(self):
+        if self.author is None and self.body is None:
+            raise ValueError("at least one of author or body is required")
+        return self
 
 
 class PostSummary(BaseModel):

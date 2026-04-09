@@ -145,6 +145,36 @@ export function Dashboard() {
     setSummary(response.summary);
   }
 
+  async function handleUpdatePost(postId: string, author: string, body: string) {
+    if (!thread) {
+      return;
+    }
+
+    setError(null);
+    try {
+      await api.updatePost(postId, { author, body });
+      await refreshWorkspace(thread.root.channel, thread.root.id);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : t.actionFailed);
+      throw caught;
+    }
+  }
+
+  async function handleDeleteThread() {
+    if (!thread) {
+      return;
+    }
+
+    setError(null);
+    try {
+      await api.deleteThread(thread.root.id);
+      await refreshWorkspace(selectedChannel);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : t.actionFailed);
+      throw caught;
+    }
+  }
+
   async function handleGenerateReply() {
     if (!thread) {
       return;
@@ -313,6 +343,8 @@ export function Dashboard() {
             onReplyAuthorChange={setReplyAuthor}
             onReplyBodyChange={setReplyBody}
             onReplySubmit={() => runAction(handleCreateReply)}
+            onUpdatePost={handleUpdatePost}
+            onDeleteThread={handleDeleteThread}
           />
         </section>
       </section>
