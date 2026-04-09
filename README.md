@@ -29,13 +29,14 @@ Japanese screenshots live in [`docs/screenshots/ja/`](docs/screenshots/ja/); see
 
 ## GitHub Pages (static demo)
 
-A **browser-only** demo (no API server) ships via the workflow [`.github/workflows/github-pages-demo.yml`](.github/workflows/github-pages-demo.yml). Data lives in `sessionStorage` for that tab only.
+A **browser-only** demo (no API server) is built by [`.github/workflows/github-pages-demo.yml`](.github/workflows/github-pages-demo.yml), which pushes a static export to the **`gh-pages` branch**. Data lives in `sessionStorage` for that tab only.
 
-1. In the GitHub repo: **Settings → Pages → Build and deployment**, set **Source** to **GitHub Actions**.
-2. Push to `main` (or run the **Deploy Pages demo** workflow manually). The site will be at `https://<user>.github.io/<repo>/` (for example `https://rsasaki0109.github.io/mdchat-space/`).
-3. English labels: append **`?lang=en`** to the URL as usual.
+1. **Settings → Pages → Build and deployment**: set **Source** to **Deploy from a branch**.
+2. Choose **Branch** `gh-pages`, folder **`/` (root)**. Save. (First run creates the branch.)
+3. Push to `main` or run **Deploy Pages demo** manually. Site: `https://<user>.github.io/<repo>/` (example: `https://rsasaki0109.github.io/mdchat-space/`).
+4. English labels: append **`?lang=en`** to the URL.
 
-**If the workflow fails on `deploy` with `HttpError: Not Found` / “Ensure GitHub Pages has been enabled”:** the site is not provisioned yet. Open **Settings → Pages** once, choose **GitHub Actions** as the source, save, then **re-run the failed workflow** (or push an empty commit).
+Do **not** set Pages **Source** to **GitHub Actions** for this repo unless you switch the workflow back to `deploy-pages`; mismatch causes deploy errors.
 
 Local build: `NEXT_PUBLIC_BASE_PATH=/<repo> npm run build:demo` (omit `NEXT_PUBLIC_BASE_PATH` for root hosting).
 

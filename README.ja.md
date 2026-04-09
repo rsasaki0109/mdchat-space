@@ -29,13 +29,14 @@ UI の表示言語は既定で **日本語**です。英語ラベルに切り替
 
 ## GitHub Pages（静的デモ）
 
-API なしの**ブラウザ内デモ**を [`.github/workflows/github-pages-demo.yml`](.github/workflows/github-pages-demo.yml) で公開できます。データはそのタブの `sessionStorage` にだけ残ります。
+API なしの**ブラウザ内デモ**は [`.github/workflows/github-pages-demo.yml`](.github/workflows/github-pages-demo.yml) が Next の静的出力を **`gh-pages` ブランチ**に push して公開します。データはそのタブの `sessionStorage` にだけ残ります。
 
-1. リポジトリの **Settings → Pages → Build and deployment** で **Source** を **GitHub Actions** にする。
-2. `main` にプッシュするか、**Deploy Pages demo** ワークフローを手動実行する。公開 URL は `https://<ユーザー>.github.io/<リポジトリ>/` 形式（例: `https://rsasaki0109.github.io/mdchat-space/`）。
-3. 英語 UI は URL に **`?lang=en`** を付ける。
+1. **Settings → Pages → Build and deployment** で **Source** を **Deploy from a branch** にする。
+2. **Branch** は **`gh-pages`**、フォルダは **`/`（root）** を選んで Save。（初回ワークフロー後にブランチができます。）
+3. `main` にプッシュするか **Deploy Pages demo** を手動実行。URL 例: `https://rsasaki0109.github.io/mdchat-space/`。
+4. 英語 UI は URL に **`?lang=en`**。
 
-**`deploy` ジョブが `HttpError: Not Found` / “Ensure GitHub Pages has been enabled” で落ちる場合:** Pages がまだ有効になっていません。**Settings → Pages** を開き、**Source** を **GitHub Actions** にして保存したあと、失敗したワークフローを **Re-run** するか、空コミットをプッシュしてください。
+**注意:** いまのワークフローは **`gh-pages` ブランチ公開**用です。Pages の Source を **GitHub Actions** のままにしていると、この方式と食い違います。**Deploy from a branch** に切り替えてください。
 
 ローカルで同じ成果物を試す: `NEXT_PUBLIC_BASE_PATH=/<リポジトリ名> npm run build:demo`（ルート配下に置く場合は `NEXT_PUBLIC_BASE_PATH` は省略）。
 
