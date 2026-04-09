@@ -13,7 +13,7 @@ The goal is not to trap chats inside a product, but to keep conversations as dur
 
 For GitHub **About** (description, topics, social preview) and `gh` examples, see [`.github/ABOUT.md`](.github/ABOUT.md).
 
-The UI defaults to **Japanese**. Append **`?lang=en`** to the URL for English labels (for example `http://localhost:3000/?lang=en`).
+With the API-backed app, the UI defaults to **Japanese**; use **`/en/`** or **`?lang=en`** for English (for example `http://localhost:3000/en/`). The **static GitHub Pages demo** uses **`/ja/`** and **`/en/`** as the main entry points; **`/`** is a short language picker.
 
 ## UI preview (English)
 
@@ -34,7 +34,7 @@ A **browser-only** demo (no API server) is built by [`.github/workflows/github-p
 1. Push to `main` (or run **Deploy Pages demo** once) so the **`gh-pages` branch** is created.
 2. **Settings → Pages**: **Source** = **Deploy from a branch**, **Branch** = **`gh-pages`**, folder **`/`**. Save.
 3. If you change workflow or assets, re-run the workflow; the site updates on push to `gh-pages`. Public URL: `https://<user>.github.io/<repo>/` (example: `https://rsasaki0109.github.io/mdchat-space/`).
-4. English labels: append **`?lang=en`**.
+4. **Localized demos (recommended):** open **`/ja/`** for Japanese UI or **`/en/`** for English UI (each uses its own `sessionStorage` key). The site root **`/`** shows a small language picker. Legacy query entries still work: **`?lang=ja`** / **`?lang=en`**.
 
 Do **not** set Pages **Source** to **GitHub Actions** for this repo unless you switch the workflow back to `deploy-pages`; mismatch causes deploy errors.
 

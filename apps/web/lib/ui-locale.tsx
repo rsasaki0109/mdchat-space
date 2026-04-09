@@ -2,20 +2,33 @@
 
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 
-import { getUiStrings, type UiLocale, type UiStrings } from "@/lib/ui-strings";
+import { getUiStrings, type UiCopyVariant, type UiLocale, type UiStrings } from "@/lib/ui-strings";
 
 type UiLocaleContextValue = {
   locale: UiLocale;
+  copyVariant: UiCopyVariant;
   t: UiStrings;
 };
 
 const UiLocaleContext = createContext<UiLocaleContextValue>({
   locale: "ja",
-  t: getUiStrings("ja"),
+  copyVariant: "default",
+  t: getUiStrings("ja", "default"),
 });
 
-export function UiLocaleProvider({ locale, children }: { locale: UiLocale; children: ReactNode }) {
-  const value = useMemo(() => ({ locale, t: getUiStrings(locale) }), [locale]);
+export function UiLocaleProvider({
+  locale,
+  copyVariant = "default",
+  children,
+}: {
+  locale: UiLocale;
+  copyVariant?: UiCopyVariant;
+  children: ReactNode;
+}) {
+  const value = useMemo(
+    () => ({ locale, copyVariant, t: getUiStrings(locale, copyVariant) }),
+    [locale, copyVariant],
+  );
   return <UiLocaleContext.Provider value={value}>{children}</UiLocaleContext.Provider>;
 }
 

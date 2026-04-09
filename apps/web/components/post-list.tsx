@@ -9,10 +9,11 @@ type PostListProps = {
   posts: PostSummary[];
   activeThreadId: string | null;
   onSelect: (threadId: string) => void;
+  formatChannelPath?: (path: string) => string;
 };
 
 
-export function PostList({ posts, activeThreadId, onSelect }: PostListProps) {
+export function PostList({ posts, activeThreadId, onSelect, formatChannelPath }: PostListProps) {
   const { locale, t } = useUiLocale();
   const dateFormatter = new Intl.DateTimeFormat(intlLocaleForUi(locale), {
     dateStyle: "medium",
@@ -36,6 +37,7 @@ export function PostList({ posts, activeThreadId, onSelect }: PostListProps) {
         <div className="space-y-3">
           {posts.map((post) => {
             const selected = post.id === activeThreadId;
+            const channelShown = formatChannelPath ? formatChannelPath(post.channel) : post.channel;
 
             return (
               <button
@@ -51,7 +53,7 @@ export function PostList({ posts, activeThreadId, onSelect }: PostListProps) {
                 <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.2em] text-slate-500">
                   <span>{post.author}</span>
                   <span>{dateFormatter.format(new Date(post.created_at))}</span>
-                  <span>{post.channel}</span>
+                  <span title={post.channel}>{channelShown}</span>
                 </div>
                 <p className="mt-3 text-sm leading-7 text-slate-700">{post.excerpt}</p>
                 <p className="mt-4 text-xs font-medium text-slate-600">{t.postListRepliesLabel(post.reply_count)}</p>

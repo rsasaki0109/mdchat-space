@@ -28,6 +28,11 @@ export function demoDmRoomLabel(path: string): string {
   return shortDmPathLabel(path);
 }
 
+/** サイドバー・一覧用。`/dm/…` のみ人が読めるラベルにし、それ以外はパスのまま。 */
+export function demoChannelSidebarLabel(path: string): string {
+  return /^\/dm\//.test(path) ? demoDmRoomLabel(path) : path;
+}
+
 function slugPath(channel: string): string {
   return channel.replace(/^\//, "").replace(/\//g, "-") || "root";
 }
@@ -566,6 +571,20 @@ export function runBrowserDemoSeed(
     "# 観測可能性バックエンド比較（メモ）\n\n**コスト** と **クエリ言語**、トレースの **サンプリング率**。",
     [
       "個人データは **マスキング** ルールを最初に。",
+    ],
+  );
+
+  /* 一覧先頭に出す「最初に触る」スレ（タイムスタンプを新しくする） */
+  minute = 9200;
+  addThread(
+    "/general",
+    "# まずここから · Start here · 30秒デモ\n\n**左** ワークスペース（個別チャット付き） → **中央** スレ一覧 → **右** 会話と **要約 / 返信ドラフト**。  \nこのスレを開いたまま、右の **要約** → **返信ドラフト** を順に押してみてください。\n\n- データは **このタブだけ**（閉じると消えます）\n- 本番は README の Docker / API から",
+    [
+      "yuki: いま **#general** の最新スレがこれ。検索バーで `SBOM` とか打っても遊べるよ。",
+      "ken: スタンプはログイン不要のデモ用キーで押せる。**自分の表示名** はコンポーザーで変えてOK。",
+    ],
+    [
+      "marin: （ルートへの返信）DM は **DM · yuki** から。往復メモが既に入ってる。",
     ],
   );
 

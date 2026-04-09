@@ -12,6 +12,8 @@ import { useUiLocale } from "@/lib/ui-locale";
 
 type ThreadPanelProps = {
   thread: ThreadResponse | null;
+  /** ヘッダのチャンネル行だけ表示を差し替え（例: DM の相手名）。 */
+  channelTitle?: (path: string) => string;
   stampsCatalog: StampOut[];
   actorKey: string;
   summary: string;
@@ -33,6 +35,7 @@ type ThreadPanelProps = {
 
 export function ThreadPanel({
   thread,
+  channelTitle,
   stampsCatalog,
   actorKey,
   summary,
@@ -121,7 +124,9 @@ export function ThreadPanel({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs uppercase tracking-[0.25em] text-slate-500">{t.threadKicker}</p>
-          <h2 className="mt-2 text-xl font-semibold text-ink">{thread.root.channel}</h2>
+          <h2 className="mt-2 text-xl font-semibold text-ink" title={thread.root.channel}>
+            {channelTitle ? channelTitle(thread.root.channel) : thread.root.channel}
+          </h2>
           <p className="mt-2 text-sm text-slate-600">{t.threadPostsInConversation(thread.posts.length)}</p>
         </div>
         <div className="flex flex-wrap gap-2">

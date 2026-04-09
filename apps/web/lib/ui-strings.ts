@@ -1,5 +1,8 @@
 export type UiLocale = "ja" | "en";
 
+/** 静的デモ（`NEXT_PUBLIC_MDCHAT_DEMO`）用のコピーを切り替える。 */
+export type UiCopyVariant = "default" | "demo";
+
 export type UiStrings = {
   heroKicker: string;
   heroTitleLine1: string;
@@ -50,6 +53,10 @@ export type UiStrings = {
   dmDemoNew: string;
   dmDemoEmpty: string;
   demoExportsNote: string;
+  /** デモ時のみ: ヒーロー下の「試す順」ヒント（既定は空）。 */
+  demoTryFlow: string;
+  /** デモ時のみ: DM パネル内のワンライナー（既定は空）。 */
+  demoDmHint: string;
   stampsHeading: string;
   addCustomStamp: string;
   fieldStampSlug: string;
@@ -112,6 +119,8 @@ const ja: UiStrings = {
   dmDemoNew: "新しい DM ルーム",
   dmDemoEmpty: "まだルームがありません。上のボタンで作成できます。",
   demoExportsNote: "デモではエクスポートは利用できません（API サーバーなし）。",
+  demoTryFlow: "",
+  demoDmHint: "",
   stampsHeading: "スタンプ",
   addCustomStamp: "オリジナル画像スタンプを追加",
   fieldStampSlug: "スラッグ（英小文字・数字・ハイフン）",
@@ -178,6 +187,8 @@ const en: UiStrings = {
   dmDemoNew: "New DM room",
   dmDemoEmpty: "No rooms yet. Create one with the button above.",
   demoExportsNote: "Exports are unavailable in the static demo (no API server).",
+  demoTryFlow: "",
+  demoDmHint: "",
   stampsHeading: "Stamps",
   addCustomStamp: "Add custom image stamp",
   fieldStampSlug: "Slug (lowercase letters, digits, hyphen)",
@@ -186,8 +197,81 @@ const en: UiStrings = {
   stampUploadSubmit: "Save stamp",
 };
 
-export function getUiStrings(locale: UiLocale): UiStrings {
-  return locale === "en" ? en : ja;
+const jaDemo: Partial<UiStrings> = {
+  heroKicker: "インストール不要 · ブラウザだけで試せます",
+  heroTitleLine1: "チームの知識を",
+  heroTitleLine2: "Markdown スレッドで積み上げる",
+  heroBody:
+    "**チャンネル**を選び、**スレ**を開き、右ペインで **要約** と **返信ドラフト**、スタンプまで一気に体験できます。左の **個別チャット** にもサンプルが入っています。データはこのタブ内だけなので、安心して触れます（閉じると消えます）。本番運用は README の Docker / API セットアップへ。",
+  demoTryFlow:
+    "おすすめの流れ: 「まずここから」スレを開く → **要約** → **返信ドラフト** → 左の **DM · yuki** を開いてみる。",
+  aiSearchPlaceholder: "Dependabot, 要約, ランタイム, SBOM…",
+  composerDescription:
+    "選んだチャンネルにすぐ投稿。`/team/2026/foo` のようにパスを書けば、その場で階層も増えます。",
+  authorPlaceholder: "表示名（例: あなた）",
+  bodyPlaceholder: "いま決まったこと・次の一手をメモ。`# 見出し` や **強調** もこのまま使えます。",
+  sidebarTitle: "ワークスペース",
+  sidebarDescription:
+    "一般 / OSS / プロダクト / 開発 / 運用のサンプル階層。`/dm/…` は個別チャット（相手名で表示）。",
+  postListTitle: "このチャンネルのスレッド",
+  postListDescription: "一覧から開くと、右に会話の全体が出ます。返信の分岐もそのまま表示されます。",
+  postListEmpty: "まだスレがありません。上のフォームから最初の一行をどうぞ。",
+  threadEmptyBody:
+    "中央の一覧からスレを選ぶと、ここに Markdown 本文・返信チェーン・AI 補助がまとまって出ます。",
+  demoModeBanner:
+    "ライブデモ | 保存先はこのブラウザのメモリ（sessionStorage）だけ。共有・同期はありません。発表・内覧・UI 評価向けです。",
+  dmDemoKicker: "直接メッセージ",
+  dmDemoTitle: "個別チャット",
+  dmDemoBody:
+    "yuki / marin / ken とのサンプル会話が入っています。社内 DM のイメージで、そのまま読み返せます。",
+  dmDemoNew: "新しい DM を始める",
+  dmDemoEmpty: "ルームはボタン一つで追加できます。",
+  demoExportsNote: "※ デモはブラウザ内だけのデータのため、Markdown / JSON のダウンロードはありません。",
+  demoDmHint: "本番では FastAPI 経由でファイルに保存・エクスポートできます。",
+  composerSubmit: "投稿してスレに載せる",
+  searchButton: "検索する",
+};
+
+const enDemo: Partial<UiStrings> = {
+  heroKicker: "No install · try everything in the browser",
+  heroTitleLine1: "Turn team knowledge into",
+  heroTitleLine2: "durable Markdown threads",
+  heroBody:
+    "Pick a **channel**, open a **thread**, then use **Summarize**, **Draft reply**, and stamps on the right. **DM** samples are on the left. Data never leaves this tab—safe to play (clears when you close it). For production, follow the Docker / API setup in the README.",
+  demoTryFlow:
+    "Suggested flow: open \"Start here\" → tap **Summarize** → **Draft reply** → open **DM · yuki** on the left.",
+  aiSearchPlaceholder: "Dependabot, SBOM, runbook, rate limits…",
+  composerDescription:
+    "Post Markdown in the selected channel. Type `/team/2026/foo` to grow the tree on the fly.",
+  authorPlaceholder: "Display name (e.g. You)",
+  bodyPlaceholder: "Capture the decision and the next step. Use `# headings` and **bold** as usual.",
+  sidebarTitle: "Workspace",
+  sidebarDescription:
+    "Sample tree: general, OSS, product, dev, ops. `/dm/…` rooms show as **DM · name**.",
+  postListTitle: "Threads in this channel",
+  postListDescription: "Selecting a thread opens the full conversation on the right, replies included.",
+  postListEmpty: "No threads yet—drop the first note with the composer above.",
+  threadEmptyBody: "Choose a thread in the center list to see Markdown, replies, and AI helpers here.",
+  demoModeBanner:
+    "Live demo | Data stays in this browser (sessionStorage) only—no sharing or sync. Great for walkthroughs and UI reviews.",
+  dmDemoKicker: "Direct messages",
+  dmDemoTitle: "1:1 chat",
+  dmDemoBody: "Sample chats with yuki, marin, and ken—read like a real DM inbox.",
+  dmDemoNew: "Start a new DM",
+  dmDemoEmpty: "Create a room with one tap.",
+  demoExportsNote: "※ Exports are unavailable in this static sandbox (no API server).",
+  demoDmHint: "With the API running, posts persist as Markdown files and export works.",
+  composerSubmit: "Post to channel",
+  searchButton: "Search",
+};
+
+export function getUiStrings(locale: UiLocale, variant: UiCopyVariant = "default"): UiStrings {
+  const base = locale === "en" ? en : ja;
+  if (variant !== "demo") {
+    return base;
+  }
+  const overlay = locale === "en" ? enDemo : jaDemo;
+  return { ...base, ...overlay };
 }
 
 export function intlLocaleForUi(locale: UiLocale): string {

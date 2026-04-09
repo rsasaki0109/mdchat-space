@@ -32,6 +32,11 @@ export function DemoDmPanel({
       <p className="text-xs uppercase tracking-[0.2em] text-slate-500">{t.dmDemoKicker}</p>
       <h3 className="mt-1 text-base font-semibold text-ink">{t.dmDemoTitle}</h3>
       <p className="mt-2 text-xs leading-5 text-slate-600">{t.dmDemoBody}</p>
+      {t.demoDmHint ? (
+        <p className="mt-2 rounded-xl border border-slate-200/70 bg-slate-50/90 px-3 py-2 text-[0.7rem] leading-5 text-slate-600">
+          {t.demoDmHint}
+        </p>
+      ) : null}
       <button
         type="button"
         onClick={onNewRoom}

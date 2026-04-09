@@ -8,6 +8,8 @@ type ChannelSidebarProps = {
   channels: ChannelNode[];
   selectedChannel: string;
   onSelect: (channelPath: string) => void;
+  /** 表示だけ差し替え（パスは `aria-label` / `title` に残す） */
+  formatChannelPath?: (path: string) => string;
 };
 
 
@@ -15,18 +17,22 @@ function ChannelBranch({
   node,
   selectedChannel,
   onSelect,
+  formatChannelPath,
 }: {
   node: ChannelNode;
   selectedChannel: string;
   onSelect: (channelPath: string) => void;
+  formatChannelPath?: (path: string) => string;
 }) {
   const selected = node.path === selectedChannel;
+  const label = formatChannelPath ? formatChannelPath(node.path) : node.path;
 
   return (
     <li className="space-y-2">
       <button
         type="button"
         aria-label={node.path}
+        title={node.path}
         onClick={() => onSelect(node.path)}
         className={`flex w-full items-center justify-between rounded-2xl px-3 py-2 text-left transition ${
           selected
@@ -34,7 +40,7 @@ function ChannelBranch({
             : "bg-white/60 text-slateblue hover:bg-white"
         }`}
       >
-        <span className="truncate font-medium">{node.path}</span>
+        <span className="truncate font-medium">{label}</span>
         <span className="ml-3 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
           {node.total_post_count}
         </span>
@@ -48,6 +54,7 @@ function ChannelBranch({
               node={child}
               selectedChannel={selectedChannel}
               onSelect={onSelect}
+              formatChannelPath={formatChannelPath}
             />
           ))}
         </ul>
@@ -57,7 +64,7 @@ function ChannelBranch({
 }
 
 
-export function ChannelSidebar({ channels, selectedChannel, onSelect }: ChannelSidebarProps) {
+export function ChannelSidebar({ channels, selectedChannel, onSelect, formatChannelPath }: ChannelSidebarProps) {
   const { t } = useUiLocale();
   return (
     <aside className="panel h-full p-5">
@@ -77,6 +84,7 @@ export function ChannelSidebar({ channels, selectedChannel, onSelect }: ChannelS
               node={node}
               selectedChannel={selectedChannel}
               onSelect={onSelect}
+              formatChannelPath={formatChannelPath}
             />
           ))}
         </ul>

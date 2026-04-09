@@ -13,7 +13,7 @@
 
 **GitHub の About 欄**（Description / Topics / Social preview）の推奨文と `gh` 例は、[`.github/ABOUT.md`](.github/ABOUT.md) にまとめています。
 
-UI の表示言語は既定で **日本語**です。英語ラベルに切り替えるには URL に **`?lang=en`** を付けます（例: `http://localhost:3000/?lang=en`）。
+API 付きの UI は既定 **日本語**です。英語は **`/en/`** または **`?lang=en`**（例: `http://localhost:3000/en/`）。**GitHub Pages の静的デモ**は **`/ja/`** / **`/en/`** を主入り口とし、ルート **`/`** は言語選択ページです。
 
 ## UI Preview（日本語）
 
@@ -34,7 +34,7 @@ API なしの**ブラウザ内デモ**は [`.github/workflows/github-pages-demo.
 1. まず `main` をプッシュするか **Deploy Pages demo** を 1 回走らせ、**`gh-pages` ブランチ**ができるのを待つ。
 2. **Settings → Pages** で **Source** を **Deploy from a branch**、**Branch** を **`gh-pages`**、フォルダ **`/`** にして Save。
 3. 以降はワークフローが `gh-pages` を更新するたびにサイトが更新される。URL 例: `https://rsasaki0109.github.io/mdchat-space/`。
-4. 英語 UI は URL に **`?lang=en`**。
+4. **言語別デモ（推奨）:** 日本語 UI は **`/ja/`**、英語 UI は **`/en/`**（それぞれ別の `sessionStorage`）。ルート **`/`** では言語選択。従来どおり **`?lang=ja`** / **`?lang=en`** でも可。
 
 **注意:** いまのワークフローは **`gh-pages` ブランチ公開**用です。Pages の Source を **GitHub Actions** のままにしていると、この方式と食い違います。**Deploy from a branch** に切り替えてください。
 

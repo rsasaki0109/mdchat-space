@@ -4,9 +4,13 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 
+const isStaticDemo = process.env.NEXT_PUBLIC_MDCHAT_DEMO === "1";
+
 export const metadata: Metadata = {
-  title: "mdchat-space",
-  description: "Markdown-first community chat for durable conversations.",
+  title: isStaticDemo ? "mdchat-space · Demo" : "mdchat-space",
+  description: isStaticDemo
+    ? "Markdown-first chat — try channels, threads, AI helpers, and DMs in your browser."
+    : "Markdown-first community chat for durable conversations.",
 };
 
 

@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
-import { api, isMdchatDemo } from "@/lib/api";
-import { demoDmRoomLabel } from "@/lib/demo-seed";
+import { api, getDemoApi, isMdchatDemo, type MdchatApi } from "@/lib/api";
+import type { UiLocale } from "@/lib/ui-strings";
+import { demoChannelSidebarLabel, demoDmRoomLabel } from "@/lib/demo-seed";
 import { tryNormalizeChannelPath } from "@/lib/channel-path";
 import type { ChannelNode, PostSummary, SearchResponse, StampOut, ThreadResponse } from "@/lib/types";
 import { ChannelSidebar } from "@/components/channel-sidebar";
 import { Composer } from "@/components/composer";
 import { DemoDmPanel } from "@/components/demo-dm-panel";
+import { LocaleSwitcher } from "@/components/locale-switcher";
 import { PostList } from "@/components/post-list";
 import { ThreadPanel } from "@/components/thread-panel";
 import { useUiLocale } from "@/lib/ui-locale";
@@ -16,6 +20,10 @@ import { useUiLocale } from "@/lib/ui-locale";
 
 function flattenChannels(nodes: ChannelNode[]): string[] {
   return nodes.flatMap((node) => [node.path, ...flattenChannels(node.children)]);
+}
+
+function demoDisplayStorageKey(loc: UiLocale): string {
+  return `mdchatDemoDisplayName-${loc}`;
 }
 
 function readPersistedActorKey(): string {
@@ -31,17 +39,47 @@ function readPersistedActorKey(): string {
 }
 
 
-export function Dashboard() {
-  const { t } = useUiLocale();
+type DashboardProps = {
+  apiOverride?: MdchatApi;
+};
+
+export function Dashboard({ apiOverride }: DashboardProps) {
+  const { t, locale } = useUiLocale();
+  const client = useMemo(
+    () => apiOverride ?? (isMdchatDemo ? getDemoApi(locale) : api),
+    [apiOverride, locale],
+  );
   const pendingThreadRef = useRef<{ channel: string; threadId: string } | null>(null);
   const [channels, setChannels] = useState<ChannelNode[]>([]);
   const [selectedChannel, setSelectedChannel] = useState("/general");
   const [posts, setPosts] = useState<PostSummary[]>([]);
   const [thread, setThread] = useState<ThreadResponse | null>(null);
-  const [rootAuthor, setRootAuthor] = useState("guest");
+  const [rootAuthor, setRootAuthor] = useState(() => {
+    if (!isMdchatDemo) {
+      return "guest";
+    }
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(demoDisplayStorageKey(locale));
+      if (saved) {
+        return saved;
+      }
+    }
+    return locale === "en" ? "You" : "あなた";
+  });
   const [rootChannel, setRootChannel] = useState("/general");
   const [rootBody, setRootBody] = useState("");
-  const [replyAuthor, setReplyAuthor] = useState("guest");
+  const [replyAuthor, setReplyAuthor] = useState(() => {
+    if (!isMdchatDemo) {
+      return "guest";
+    }
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(demoDisplayStorageKey(locale));
+      if (saved) {
+        return saved;
+      }
+    }
+    return locale === "en" ? "You" : "あなた";
+  });
   const [replyBody, setReplyBody] = useState("");
   const [summary, setSummary] = useState("");
   const [replyDraft, setReplyDraft] = useState("");
@@ -59,14 +97,14 @@ export function Dashboard() {
       return;
     }
     try {
-      setDmRooms(await api.listDmRooms());
+      setDmRooms(await client.listDmRooms());
     } catch {
       setDmRooms([]);
     }
   }
 
   async function loadChannels(preferredChannel?: string) {
-    const tree = await api.getChannelsTree();
+    const tree = await client.getChannelsTree();
     const channelPaths = flattenChannels(tree);
     const normalizedPreferred =
       preferredChannel !== undefined && String(preferredChannel).trim()
@@ -87,7 +125,7 @@ export function Dashboard() {
   }
 
   async function loadPosts(channelPath: string) {
-    const channelPosts = await api.getPosts(channelPath);
+    const channelPosts = await client.getPosts(channelPath);
     setPosts(channelPosts);
 
     let targetId: string | null = null;
@@ -117,7 +155,7 @@ export function Dashboard() {
 
   async function openThread(threadId: string) {
     const actor = actorKey.trim() || "guest";
-    const response = await api.getThread(threadId, actor);
+    const response = await client.getThread(threadId, actor);
     setThread(response);
     setSummary("");
     setReplyDraft("");
@@ -131,7 +169,7 @@ export function Dashboard() {
     setError(null);
     try {
       const actor = actorKey.trim() || "guest";
-      await api.togglePostStamp(postId, stampId, actor);
+      await client.togglePostStamp(postId, stampId, actor);
       await openThread(thread.root.id);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : t.actionFailed);
@@ -142,8 +180,8 @@ export function Dashboard() {
   async function handleCreateCustomStamp(slug: string, label: string, file: File) {
     setError(null);
     try {
-      await api.createImageStamp(slug, label, file);
-      setStampCatalog(await api.getStamps());
+      await client.createImageStamp(slug, label, file);
+      setStampCatalog(await client.getStamps());
       if (thread) {
         await openThread(thread.root.id);
       }
@@ -169,25 +207,48 @@ export function Dashboard() {
         setError(caught instanceof Error ? caught.message : t.loadFailed);
       });
     });
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reload when demo locale / API instance changes
+  }, [client]);
 
   useEffect(() => {
-    api.getStamps().then(setStampCatalog).catch(() => setStampCatalog([]));
-  }, []);
+    client.getStamps().then(setStampCatalog).catch(() => setStampCatalog([]));
+  }, [client]);
 
   useEffect(() => {
     if (isMdchatDemo) {
       void refreshDmRooms();
     }
-  }, []);
+  }, [client]);
+
+  useEffect(() => {
+    if (!isMdchatDemo) {
+      return;
+    }
+    if (typeof window !== "undefined" && localStorage.getItem(demoDisplayStorageKey(locale))) {
+      return;
+    }
+    const d = locale === "en" ? "You" : "あなた";
+    setRootAuthor(d);
+    setReplyAuthor(d);
+  }, [locale, isMdchatDemo]);
+
+  const formatChannelPath = isMdchatDemo ? demoChannelSidebarLabel : undefined;
 
   async function handleCreateRootPost() {
     setError(null);
-    const created = await api.createPost({
+    const created = await client.createPost({
       author: rootAuthor,
       channel: rootChannel,
       body: rootBody,
     });
+
+    if (isMdchatDemo && rootAuthor.trim()) {
+      try {
+        localStorage.setItem(demoDisplayStorageKey(locale), rootAuthor.trim());
+      } catch {
+        /* private mode / quota */
+      }
+    }
 
     setRootBody("");
     await refreshWorkspace(created.channel, created.id);
@@ -200,12 +261,20 @@ export function Dashboard() {
     }
 
     setError(null);
-    const created = await api.createPost({
+    const created = await client.createPost({
       author: replyAuthor,
       channel: thread.root.channel,
       body: replyBody,
       parent_post_id: thread.posts[thread.posts.length - 1]?.id ?? thread.root.id,
     });
+
+    if (isMdchatDemo && replyAuthor.trim()) {
+      try {
+        localStorage.setItem(demoDisplayStorageKey(locale), replyAuthor.trim());
+      } catch {
+        /* private mode / quota */
+      }
+    }
 
     setReplyBody("");
     await refreshWorkspace(created.channel, created.thread_root_id);
@@ -218,7 +287,7 @@ export function Dashboard() {
     }
 
     setError(null);
-    const response = await api.summarize(thread.root.id);
+    const response = await client.summarize(thread.root.id);
     setSummary(response.summary);
   }
 
@@ -229,7 +298,7 @@ export function Dashboard() {
 
     setError(null);
     try {
-      await api.updatePost(postId, { author, body });
+      await client.updatePost(postId, { author, body });
       await refreshWorkspace(thread.root.channel, thread.root.id);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : t.actionFailed);
@@ -244,7 +313,7 @@ export function Dashboard() {
 
     setError(null);
     try {
-      await api.deleteThread(thread.root.id);
+      await client.deleteThread(thread.root.id);
       await refreshWorkspace(selectedChannel);
       await refreshDmRooms();
     } catch (caught) {
@@ -259,7 +328,7 @@ export function Dashboard() {
     }
 
     setError(null);
-    const response = await api.reply(thread.root.id);
+    const response = await client.reply(thread.root.id);
     setReplyDraft(response.reply);
     setReplyBody(response.reply);
   }
@@ -272,7 +341,7 @@ export function Dashboard() {
 
     setError(null);
     const scope = searchAllChannels ? null : selectedChannel;
-    const results = await api.search(searchQuery.trim(), scope);
+    const results = await client.search(searchQuery.trim(), scope);
     setSearchResults(results);
   }
 
@@ -287,7 +356,7 @@ export function Dashboard() {
   async function handleNewDmRoom() {
     setError(null);
     try {
-      const { channel } = await api.createDmRoom();
+      const { channel } = await client.createDmRoom();
       await refreshDmRooms();
       setRootChannel(channel);
       pendingThreadRef.current = null;
@@ -305,7 +374,12 @@ export function Dashboard() {
   }
 
   return (
-    <main className="min-h-screen px-4 py-6 text-ink md:px-6 xl:px-8">
+    <main className="relative min-h-screen px-4 py-6 text-ink md:px-6 xl:px-8">
+      <div className="pointer-events-none fixed right-3 top-3 z-[100] md:right-5 md:top-5">
+        <div className="pointer-events-auto">
+          <LocaleSwitcher />
+        </div>
+      </div>
       <section className="mx-auto max-w-[1800px]">
         <header className="mb-6 grid gap-4 lg:grid-cols-[1.4fr,0.9fr]">
           <div className="panel p-6">
@@ -315,6 +389,11 @@ export function Dashboard() {
               <span className="block text-slate-700">{t.heroTitleLine2}</span>
             </h1>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600 md:text-base">{t.heroBody}</p>
+            {isMdchatDemo && t.demoTryFlow ? (
+              <div className="md-body mt-4 max-w-3xl rounded-2xl border border-slate-200/90 bg-white/70 px-4 py-3 text-slate-700 [&_p]:my-2">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{t.demoTryFlow}</ReactMarkdown>
+              </div>
+            ) : null}
           </div>
 
           <div className="panel p-6">
@@ -323,7 +402,7 @@ export function Dashboard() {
             ) : (
               <div className="flex flex-wrap gap-3">
                 <a
-                  href={api.exportMarkdownUrl}
+                  href={client.exportMarkdownUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="rounded-full bg-slateblue px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
@@ -331,7 +410,7 @@ export function Dashboard() {
                   Export Markdown
                 </a>
                 <a
-                  href={api.exportJsonUrl}
+                  href={client.exportJsonUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
@@ -396,7 +475,9 @@ export function Dashboard() {
                         className="w-full rounded-2xl border border-slate-200 bg-white p-3 text-left transition hover:border-slate-400"
                       >
                         <div className="flex items-center justify-between gap-3 text-xs uppercase tracking-[0.18em] text-slate-500">
-                          <span>{hit.channel}</span>
+                          <span title={hit.channel}>
+                            {formatChannelPath ? formatChannelPath(hit.channel) : hit.channel}
+                          </span>
                           <span>{hit.score.toFixed(3)}</span>
                         </div>
                         <p className="mt-2 text-sm leading-6 text-slate-700">{hit.excerpt}</p>
@@ -435,6 +516,7 @@ export function Dashboard() {
             <ChannelSidebar
               channels={channels}
               selectedChannel={selectedChannel}
+              formatChannelPath={formatChannelPath}
               onSelect={(channelPath) => {
                 pendingThreadRef.current = null;
                 setSelectedChannel(channelPath);
@@ -462,12 +544,14 @@ export function Dashboard() {
             <PostList
               posts={posts}
               activeThreadId={thread?.root.id ?? null}
+              formatChannelPath={formatChannelPath}
               onSelect={(threadId) => runAction(() => openThread(threadId))}
             />
           </div>
 
           <ThreadPanel
             thread={thread}
+            channelTitle={formatChannelPath}
             stampsCatalog={stampCatalog}
             actorKey={actorKey}
             summary={summary}

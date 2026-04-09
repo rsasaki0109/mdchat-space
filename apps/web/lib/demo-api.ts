@@ -13,6 +13,7 @@ import type {
 } from "@/lib/types";
 
 import type { MdchatApi } from "./api-types";
+import type { UiLocale } from "./ui-strings";
 import { runBrowserDemoSeed } from "./demo-seed";
 import { rankPostsForSearch } from "./demo-search";
 
@@ -23,9 +24,6 @@ type ChannelMeta = {
   parent_path: string | null;
   depth: number;
 };
-
-const STORAGE_KEY = "mdchat-space-demo-v6";
-const LEGACY_STORAGE_KEY = "mdchat-space-demo-v5";
 
 const BUILTIN_STAMPS: StampOut[] = [
   { id: "demo-stamp-thumbsup", slug: "thumbsup", label: "いいね", kind: "emoji", emoji_char: "👍", image_url: null },
@@ -115,7 +113,12 @@ function slugPath(channel: string): string {
   return channel.replace(/^\//, "").replace(/\//g, "-") || "root";
 }
 
-function createDemoApi(): MdchatApi {
+function createDemoApi(locale: UiLocale): MdchatApi {
+  const isEn = locale === "en";
+  const storageKey = `mdchat-space-demo-v8-${locale}`;
+  const legacyStorageKeys =
+    locale === "ja" ? ["mdchat-space-demo-v7", "mdchat-space-demo-v6"] : [];
+
   const channelRows = new Map<string, ChannelMeta>();
   const posts = new Map<string, ThreadPost>();
   let stampReactions: StampReactionRow[] = [];
@@ -155,8 +158,7 @@ function createDemoApi(): MdchatApi {
       dmRooms: [...dmRoomOrder],
     };
     try {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-      sessionStorage.removeItem(LEGACY_STORAGE_KEY);
+      sessionStorage.setItem(storageKey, JSON.stringify(payload));
     } catch {
       /* quota or private mode */
     }
@@ -167,7 +169,15 @@ function createDemoApi(): MdchatApi {
       return;
     }
     try {
-      const raw = sessionStorage.getItem(STORAGE_KEY) ?? sessionStorage.getItem(LEGACY_STORAGE_KEY);
+      let raw = sessionStorage.getItem(storageKey);
+      if (!raw) {
+        for (const legacy of legacyStorageKeys) {
+          raw = sessionStorage.getItem(legacy);
+          if (raw) {
+            break;
+          }
+        }
+      }
       if (!raw) {
         return;
       }
@@ -464,25 +474,42 @@ function createDemoApi(): MdchatApi {
     async summarize(threadId: string) {
       const thread = await getThreadInner(threadId);
       const names = [...new Set(thread.posts.map((p) => p.author))];
-      const summary =
-        "## スレッド要約（ブラウザデモ）\n\n" +
-        `- 投稿数: ${thread.posts.length}\n` +
-        `- 参加者: ${names.join(", ") || "—"}\n\n` +
-        "※ 実サーバーではなく、お試し用の簡易表示です。";
+      const summary = isEn
+        ? "## Thread summary (browser demo)\n\n" +
+          `- Posts: ${thread.posts.length}\n` +
+          `- Participants: ${names.join(", ") || "—"}\n\n` +
+          "*Heuristic preview only—not the production AI backend."
+        : "## スレッド要約（ブラウザデモ）\n\n" +
+          `- 投稿数: ${thread.posts.length}\n` +
+          `- 参加者: ${names.join(", ") || "—"}\n\n` +
+          "※ 実サーバーではなく、お試し用の簡易表示です。";
       return { thread_id: thread.root.id, summary };
     },
 
     async reply(threadId: string, instruction?: string) {
       const thread = await getThreadInner(threadId, null);
       const last = thread.posts[thread.posts.length - 1];
-      const tail = last ? `\n\n（直近: ${last.author} さんの投稿を参照）` : "";
-      const hint = instruction?.trim() ? `\n\n補足: ${instruction.trim()}` : "";
-      const text =
-        "これはデモ用のテンプレ返信です。\n\n" +
-        "```md\n了解です。次の3点を確認させてください。\n" +
-        "1. 目的\n2. 制約\n3. 次のアクション\n```" +
-        tail +
-        hint;
+      const tail = last
+        ? isEn
+          ? `\n\n(Ref: recent post by ${last.author})`
+          : `\n\n（直近: ${last.author} さんの投稿を参照）`
+        : "";
+      const hint = instruction?.trim()
+        ? isEn
+          ? `\n\nNote: ${instruction.trim()}`
+          : `\n\n補足: ${instruction.trim()}`
+        : "";
+      const text = isEn
+        ? "This is a demo reply template.\n\n" +
+          "```md\nSounds good — three quick checks:\n" +
+          "1. Goal\n2. Constraints\n3. Next step\n```" +
+          tail +
+          hint
+        : "これはデモ用のテンプレ返信です。\n\n" +
+          "```md\n了解です。次の3点を確認させてください。\n" +
+          "1. 目的\n2. 制約\n3. 次のアクション\n```" +
+          tail +
+          hint;
       return { thread_id: thread.root.id, reply: text };
     },
 
@@ -510,8 +537,12 @@ function createDemoApi(): MdchatApi {
       const lead = hits[0];
       const answer =
         hits.length === 0
-          ? "該当が見つかりませんでした。別の言い回しや全チャンネル検索を試してください。"
-          : `「${q}」で ${hits.length} 件ヒットしました。${lead ? `先頭スコア ${lead.score}（${lead.channel}）。` : ""}`;
+          ? isEn
+            ? "No matches. Try different keywords or search all channels."
+            : "該当が見つかりませんでした。別の言い回しや全チャンネル検索を試してください。"
+          : isEn
+            ? `"${q}" — ${hits.length} hit(s).${lead ? ` Top score ${lead.score} (${lead.channel}).` : ""}`
+            : `「${q}」で ${hits.length} 件ヒットしました。${lead ? `先頭スコア ${lead.score}（${lead.channel}）。` : ""}`;
       return { query: q, answer, hits };
     },
 
@@ -520,11 +551,11 @@ function createDemoApi(): MdchatApi {
   };
 }
 
-let demoSingleton: MdchatApi | null = null;
+const demoApisByLocale = new Map<UiLocale, MdchatApi>();
 
-export function getDemoApi(): MdchatApi {
-  if (!demoSingleton) {
-    demoSingleton = createDemoApi();
+export function getDemoApi(locale: UiLocale): MdchatApi {
+  if (!demoApisByLocale.has(locale)) {
+    demoApisByLocale.set(locale, createDemoApi(locale));
   }
-  return demoSingleton;
+  return demoApisByLocale.get(locale)!;
 }
