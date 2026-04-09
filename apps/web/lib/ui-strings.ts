@@ -54,7 +54,7 @@ const ja: UiStrings = {
   heroBody:
     "`mdchat-space` は、本文をすべて Markdown ファイルで保存し、メタ情報だけを PostgreSQL に持つ OSS チャットです。UI はただのクライアントで、データ自体はいつでも外へ持ち出せます。",
   aiSearchLabel: "AI 検索",
-  aiSearchPlaceholder: "GNSS の誤差, ログ保存, 方針整理...",
+  aiSearchPlaceholder: "API 互換, ログ設計, リリース方針...",
   searchButton: "検索",
   searchAllChannels: "全チャンネルで検索",
   loadFailed: "初期ロードに失敗しました。",
@@ -104,7 +104,7 @@ const en: UiStrings = {
   heroBody:
     "`mdchat-space` stores every message body as a Markdown file and keeps only metadata in PostgreSQL. The UI is just an API client; you can export data any time.",
   aiSearchLabel: "AI search",
-  aiSearchPlaceholder: "GNSS errors, log retention, planning...",
+  aiSearchPlaceholder: "API compatibility, logging, release planning...",
   searchButton: "Search",
   searchAllChannels: "Search all channels",
   loadFailed: "Failed to load the workspace.",

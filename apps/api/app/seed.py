@@ -27,12 +27,12 @@ def seed_demo_data(session: Session) -> None:
         created_at=base_time,
     )
 
-    gnss_root = create_post(
+    api_thread_root = create_post(
         session,
         PostCreate(
             author="mika",
-            channel="/dev/gnss",
-            body="GNSS の誤差を議論するスレッドです。\n\n都市部でのマルチパスと、低速走行時のふらつきを分けて観測したいです。",
+            channel="/dev/backend",
+            body="API の後方互換とログ設計についてのスレッドです。\n\nメジャーバージョンを上げるときの移行期間と、フィールド廃止の案内の出し方を整理したいです。",
         ),
         created_at=base_time + timedelta(minutes=20),
     )
@@ -41,9 +41,9 @@ def seed_demo_data(session: Session) -> None:
         session,
         PostCreate(
             author="takumi",
-            channel="/dev/gnss",
-            parent_post_id=gnss_root.id,
-            body="まずはログを `open sky / suburban / urban canyon` に分けて保存したいです。比較の軸が揃うと後で Markdown 検索しやすくなります。",
+            channel="/dev/backend",
+            parent_post_id=api_thread_root.id,
+            body="リクエストIDをログに載せて、同じユーザーセッションを追いやすくしたいです。保存期間は本番と検証で分けたほうが安全だと思います。",
         ),
         created_at=base_time + timedelta(minutes=30),
     )
@@ -52,9 +52,9 @@ def seed_demo_data(session: Session) -> None:
         session,
         PostCreate(
             author="ryohei",
-            channel="/dev/gnss",
-            parent_post_id=gnss_root.id,
-            body="賛成です。 `/dev/gnss/log-review` チャンネルを切って、評価観点をテンプレ化すると運用しやすいと思います。",
+            channel="/dev/backend",
+            parent_post_id=api_thread_root.id,
+            body="賛成です。`/dev/backend/observability` チャンネルを切って、チェックリストを Markdown テンプレ化すると運用しやすいと思います。",
         ),
         created_at=base_time + timedelta(minutes=45),
     )

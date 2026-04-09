@@ -52,22 +52,22 @@ API なしの**ブラウザ内デモ**は [`.github/workflows/github-pages-demo.
 ---
 id: 0f2d7eb9-8a77-40f5-9148-d7c2d4d6f5c4
 author: ryohei
-channel: /dev/gnss
+channel: /dev/backend
 timestamp: 2026-04-09T01:20:00+00:00
 thread_root_id: 0f2d7eb9-8a77-40f5-9148-d7c2d4d6f5c4
 parent_post_id: null
 ---
 
-GNSS の誤差を議論するスレッドです。
+API の後方互換とログ設計について議論するスレッドです。
 
-都市部でのマルチパスと、低速走行時のふらつきを分けて観測したいです。
+メジャーバージョンアップ時の移行期間と、フィールド廃止の案内の出し方を整理したいです。
 ```
 
 保存先はチャンネル階層と一致します。
 
 ```text
 data/channels/general/...
-data/channels/dev/gnss/...
+data/channels/dev/backend/...
 data/channels/ops/announcements/...
 ```
 
@@ -76,7 +76,7 @@ data/channels/ops/announcements/...
 UI は Next.js ですが、全機能は FastAPI 経由で操作できます。
 
 - `GET /channels/tree`
-- `GET /posts?channel=/dev/gnss`
+- `GET /posts?channel=/dev/backend`
 - `POST /posts`
 - `PATCH /posts/{id}` — 既存 Markdown を書き換えつつ著者・本文を更新
 - `DELETE /posts/{id}` — スレッド全体を削除（`id` は **ルート投稿**）
@@ -250,8 +250,8 @@ curl -X POST http://localhost:8000/posts \
   -H "Content-Type: application/json" \
   -d '{
     "author": "ryohei",
-    "channel": "/dev/gnss",
-    "body": "GNSS の誤差について、都市部のログを先に見たいです。"
+    "channel": "/dev/backend",
+    "body": "API の互換性ポリシーと、ログに載せる共通フィールドをそろえたいです。"
   }'
 ```
 
@@ -261,7 +261,7 @@ curl -X POST http://localhost:8000/posts \
 curl -X POST http://localhost:8000/ai/search \
   -H "Content-Type: application/json" \
   -d '{
-    "query": "GNSS 誤差 ログ保存",
+    "query": "API 互換 ログ設計",
     "channel": "/dev"
   }'
 ```

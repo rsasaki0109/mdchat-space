@@ -228,7 +228,7 @@ startup 時に `SEED_DEMO_DATA=true` ならデモデータが入ります。
 今の seed には以下があります。
 
 - `/general`
-- `/dev/gnss`
+- `/dev/backend`
 - `/ops/announcements`
 
 このおかげで UI 起動直後に最低限のデータが見えます。
