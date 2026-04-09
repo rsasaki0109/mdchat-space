@@ -1,0 +1,35 @@
+{
+  "name": "mdchat-space",
+  "private": true,
+  "description": "Markdown-first self-hosted chat: content lives in .md files, FastAPI + Next.js, export to Markdown/JSON.",
+  "keywords": [
+    "markdown",
+    "chat",
+    "fastapi",
+    "nextjs",
+    "postgresql",
+    "export",
+    "self-hosted"
+  ],
+  "homepage": "https://github.com/rsasaki0109/mdchat-space#readme",
+  "bugs": {
+    "url": "https://github.com/rsasaki0109/mdchat-space/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rsasaki0109/mdchat-space.git"
+  },
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "dev:web": "npm --workspace apps/web run dev",
+    "build:web": "npm --workspace apps/web run build",
+    "screenshots": "playwright test tests/ui-screenshots.spec.ts",
+    "screenshots:install": "playwright install chromium",
+    "test:api": "bash -c 'cd apps/api && PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 ../../.venv/bin/python -m pytest tests -q'"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0"
+  }
+}

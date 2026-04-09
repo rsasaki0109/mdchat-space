@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  min-height: 100vh;
+  color: #1f2937;
+  background:
+    radial-gradient(circle at top left, rgba(251, 191, 36, 0.18), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(20, 83, 45, 0.1), transparent 24%),
+    linear-gradient(180deg, #f8f5ed 0%, #f3efe5 45%, #eef2f7 100%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.panel {
+  @apply rounded-3xl border border-white/60 bg-paper/90 shadow-card backdrop-blur;
+}
+
+.panel-muted {
+  @apply rounded-2xl border border-slate-200/70 bg-white/70;
+}
+
+.md-body {
+  @apply text-sm leading-7 text-slate-700;
+}
+
+.md-body h1,
+.md-body h2,
+.md-body h3 {
+  @apply mt-4 font-semibold text-ink;
+}
+
+.md-body h1 {
+  @apply text-xl;
+}
+
+.md-body h2 {
+  @apply text-lg;
+}
+
+.md-body p {
+  @apply my-3 whitespace-pre-wrap;
+}
+
+.md-body ul,
+.md-body ol {
+  @apply my-3 ml-5;
+}
+
+.md-body li {
+  @apply my-1;
+}
+
+.md-body code {
+  @apply rounded bg-amber-100 px-1.5 py-0.5 font-mono text-xs text-amber-900;
+}
+
+.md-body pre {
+  @apply overflow-x-auto rounded-2xl bg-slate-900 p-4 text-slate-100;
+}
