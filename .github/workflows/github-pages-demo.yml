@@ -1,4 +1,5 @@
 # Static UI demo on GitHub Pages (in-browser data only; no FastAPI/Postgres).
+# Prerequisite: repo Settings → Pages → Source = GitHub Actions (otherwise deploy job 404s).
 name: Deploy Pages demo
 
 on:

@@ -35,6 +35,8 @@ API なしの**ブラウザ内デモ**を [`.github/workflows/github-pages-demo.
 2. `main` にプッシュするか、**Deploy Pages demo** ワークフローを手動実行する。公開 URL は `https://<ユーザー>.github.io/<リポジトリ>/` 形式（例: `https://rsasaki0109.github.io/mdchat-space/`）。
 3. 英語 UI は URL に **`?lang=en`** を付ける。
 
+**`deploy` ジョブが `HttpError: Not Found` / “Ensure GitHub Pages has been enabled” で落ちる場合:** Pages がまだ有効になっていません。**Settings → Pages** を開き、**Source** を **GitHub Actions** にして保存したあと、失敗したワークフローを **Re-run** するか、空コミットをプッシュしてください。
+
 ローカルで同じ成果物を試す: `NEXT_PUBLIC_BASE_PATH=/<リポジトリ名> npm run build:demo`（ルート配下に置く場合は `NEXT_PUBLIC_BASE_PATH` は省略）。
 
 ## 設計原則
