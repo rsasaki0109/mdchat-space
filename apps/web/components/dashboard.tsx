@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 
 import { api, isMdchatDemo } from "@/lib/api";
+import { tryNormalizeChannelPath } from "@/lib/channel-path";
 import type { ChannelNode, PostSummary, SearchResponse, StampOut, ThreadResponse } from "@/lib/types";
 import { ChannelSidebar } from "@/components/channel-sidebar";
 import { Composer } from "@/components/composer";
@@ -53,9 +54,14 @@ export function Dashboard() {
   async function loadChannels(preferredChannel?: string) {
     const tree = await api.getChannelsTree();
     const channelPaths = flattenChannels(tree);
+    const normalizedPreferred =
+      preferredChannel !== undefined && String(preferredChannel).trim()
+        ? tryNormalizeChannelPath(preferredChannel)
+        : null;
+
     const nextChannel =
-      preferredChannel && channelPaths.includes(preferredChannel)
-        ? preferredChannel
+      normalizedPreferred !== null
+        ? normalizedPreferred
         : channelPaths.includes(selectedChannel)
           ? selectedChannel
           : channelPaths[0] ?? "/general";

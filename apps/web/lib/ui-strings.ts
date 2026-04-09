@@ -99,7 +99,7 @@ const ja: UiStrings = {
   deleteThread: "スレッドを削除",
   deleteThreadConfirm: "このスレッドとすべての返信を削除します。よろしいですか？",
   demoModeBanner:
-    "デモモード: データはこのブラウザの sessionStorage にだけ保存され、他のユーザーとは共有されません。タブを閉じると消えます。",
+    "デモ: データはこのブラウザの sessionStorage にだけ保存されます。他の人と共有する機能はなく、試し打ち用です。タブを閉じると消えます。",
   demoExportsNote: "デモではエクスポートは利用できません（API サーバーなし）。",
   stampsHeading: "スタンプ",
   addCustomStamp: "オリジナル画像スタンプを追加",
@@ -159,7 +159,7 @@ const en: UiStrings = {
   deleteThread: "Delete thread",
   deleteThreadConfirm: "Delete this thread and all replies permanently?",
   demoModeBanner:
-    "Demo: data stays in this browser (sessionStorage only). Other visitors do not see your posts. Closing the tab clears it.",
+    "Demo only: data stays in this browser’s sessionStorage. There is no sharing with other people—just a local sandbox. Closing the tab clears it.",
   demoExportsNote: "Exports are unavailable in the static demo (no API server).",
   stampsHeading: "Stamps",
   addCustomStamp: "Add custom image stamp",
