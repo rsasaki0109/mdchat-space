@@ -182,6 +182,22 @@ def test_ai_search_partial_substring(client):
     assert any("UNIQUE" in h.get("excerpt", "") for h in hits)
 
 
+def test_ai_search_returns_multiple_hits(client):
+    bodies = [
+        "alpha common_hit_token logging baseline one",
+        "beta paragraph with common_hit_token and more logging",
+        "gamma only common_hit_token here",
+    ]
+    for i, body in enumerate(bodies):
+        client.post(
+            "/posts",
+            json={"author": "u", "channel": f"/pytest/multi/{i}", "body": body},
+        )
+    res = client.post("/ai/search", json={"query": "common_hit_token", "limit": 15})
+    assert res.status_code == 200
+    assert len(res.json()["hits"]) >= 3
+
+
 def test_ai_search_multiword_and_global(client):
     client.post(
         "/posts",

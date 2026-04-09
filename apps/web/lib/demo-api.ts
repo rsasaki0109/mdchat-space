@@ -20,7 +20,7 @@ type ChannelMeta = {
   depth: number;
 };
 
-const STORAGE_KEY = "mdchat-space-demo-v2";
+const STORAGE_KEY = "mdchat-space-demo-v3";
 
 type PersistShape = {
   channels: [string, ChannelMeta][];
@@ -116,9 +116,17 @@ function createDemoApi(): MdchatApi {
     const root2 = "22222222-2222-2222-2222-222222222222";
     const root3 = "33333333-3333-3333-3333-333333333333";
     const reply1 = "44444444-4444-4444-4444-444444444444";
+    const root4 = "55555555-5555-5555-5555-555555555555";
+    const root5 = "66666666-6666-6666-6666-666666666666";
+    const root6 = "77777777-7777-7777-7777-777777777777";
+    const root7 = "88888888-8888-8888-8888-888888888888";
 
     ensureChannelHierarchy("/general");
     ensureChannelHierarchy("/oss/news");
+    ensureChannelHierarchy("/product/roadmap");
+    ensureChannelHierarchy("/dev/docs");
+    ensureChannelHierarchy("/ops/runbook");
+    ensureChannelHierarchy("/dev/backend");
 
     const p1: ThreadPost = {
       id: root1,
@@ -174,14 +182,69 @@ function createDemoApi(): MdchatApi {
         "# OSS メモ（短報）\n\n" +
         "`/oss/news` に **リンク集・短文メモ** を置く想定のチャンネルです。\n\n" +
         "- 気になった **CHANGELOG の一行** をコピペ + 一言コメント\n" +
-        "- 「次の四半期で追う」リストのタスク化\n\n" +
-        "※ ここは静的デモなので、実データではなくサンプル文面です。",
+        "- **リリース日** とセキュリティ修正の有無をメモしておくとログ調査が速い\n\n" +
+        "※ 静的デモ用のサンプルです。",
       thread_root_id: root3,
       parent_post_id: null,
       markdown_path: `demo/${slugPath("/oss/news")}/${root3.slice(0, 8)}.md`,
     };
 
-    for (const p of [p1, p2, p3, p4]) {
+    const p5: ThreadPost = {
+      id: root4,
+      author: "aya",
+      channel: "/product/roadmap",
+      created_at: "2026-04-01T09:30:00+00:00",
+      updated_at: "2026-04-01T09:30:00+00:00",
+      body:
+        "# 今四半期のリリース方針（デモ）\n\n" +
+        "破壊的変更は **リリースノート** の冒頭へ。テンプレは **Markdown** で共有し、ログの後方互換注意も同じ粒度で書きたい。",
+      thread_root_id: root4,
+      parent_post_id: null,
+      markdown_path: `demo/${slugPath("/product/roadmap")}/${root4.slice(0, 8)}.md`,
+    };
+
+    const p6: ThreadPost = {
+      id: root5,
+      author: "kenta",
+      channel: "/dev/docs",
+      created_at: "2026-04-01T09:15:00+00:00",
+      updated_at: "2026-04-01T09:15:00+00:00",
+      body:
+        "# API リファレンスとログ例（デモ）\n\n" +
+        "各 **API** のリクエスト例と、失敗時に **ログ** に出るコードを Markdown 表で対応付ける前提のメモ。",
+      thread_root_id: root5,
+      parent_post_id: null,
+      markdown_path: `demo/${slugPath("/dev/docs")}/${root5.slice(0, 8)}.md`,
+    };
+
+    const p7: ThreadPost = {
+      id: root6,
+      author: "jun",
+      channel: "/ops/runbook",
+      created_at: "2026-04-01T09:00:00+00:00",
+      updated_at: "2026-04-01T09:00:00+00:00",
+      body:
+        "障害時は影響時間帯の **ログ** をそのまま貼る運用。**リリース** 直後だけログレベルを上げる手順も Markdown の runbook に分割。",
+      thread_root_id: root6,
+      parent_post_id: null,
+      markdown_path: `demo/${slugPath("/ops/runbook")}/${root6.slice(0, 8)}.md`,
+    };
+
+    const p8: ThreadPost = {
+      id: root7,
+      author: "mika",
+      channel: "/dev/backend",
+      created_at: "2026-04-01T08:45:00+00:00",
+      updated_at: "2026-04-01T08:45:00+00:00",
+      body:
+        "# バックエンド雑記（デモ検索用）\n\n" +
+        "外部 **API** のレート制限で詰まったとき、まず **ログ** のステータス行だけ切り出してから本文を追うと迷子にならない。",
+      thread_root_id: root7,
+      parent_post_id: null,
+      markdown_path: `demo/${slugPath("/dev/backend")}/${root7.slice(0, 8)}.md`,
+    };
+
+    for (const p of [p1, p2, p3, p4, p5, p6, p7, p8]) {
       posts.set(p.id, p);
     }
   }
