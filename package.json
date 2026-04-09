@@ -25,6 +25,7 @@
   "scripts": {
     "dev:web": "npm --workspace apps/web run dev",
     "build:web": "npm --workspace apps/web run build",
+    "build:demo": "bash -c 'MDCHAT_STATIC_EXPORT=1 NEXT_PUBLIC_MDCHAT_DEMO=1 npm --workspace apps/web run build'",
     "screenshots": "playwright test tests/ui-screenshots.spec.ts",
     "screenshots:install": "playwright install chromium",
     "test:e2e": "playwright test tests/ui-e2e.spec.ts",
