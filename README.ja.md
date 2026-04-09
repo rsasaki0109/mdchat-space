@@ -196,7 +196,7 @@ npm run test:api
 
 ### E2E テスト（Playwright）
 
-PostgreSQL と API を起動した状態で、ルートから `npm run test:e2e` を実行します（API の既定は `http://127.0.0.1:8000`。変更する場合は `MDCHAT_API_URL`）。Playwright は `playwright.config.ts` に従いポート `3030` で Next を起動します（自前の dev サーバを使う場合は `MDCHAT_NO_WEB_SERVER=1` と `MDCHAT_BASE_URL`）。テストは `/health` を確認したうえで **`POST /posts` でシード**し、日本語 UI でチャンネル選択・要約・**AI Summary** 表示まで検証します。現時点の GitHub Actions には含めていません（API + DB が必要なため）。
+PostgreSQL と API を起動した状態で、ルートから `npm run test:e2e` を実行します（API の既定は `http://127.0.0.1:8000`。変更する場合は `MDCHAT_API_URL`）。Playwright は `playwright.config.ts` に従いポート `3030` で Next を起動します（自前の dev サーバを使う場合は `MDCHAT_NO_WEB_SERVER=1` と `MDCHAT_BASE_URL`）。テストは `/health` を確認したうえで **`POST /posts` でシード**し、日本語 UI でチャンネル選択・要約・**AI Summary** 表示まで検証します。GitHub Actions の **`e2e`** ジョブでも同じ手順を実行します（Postgres サービス + uvicorn + Playwright）。
 
 ## 実装済み MVP
 

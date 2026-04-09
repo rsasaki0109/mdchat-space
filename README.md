@@ -190,7 +190,7 @@ npm run test:api
 
 ### E2E tests (Playwright)
 
-With PostgreSQL and the API running, execute `npm run test:e2e` from the repo root (default API `http://127.0.0.1:8000`, override with `MDCHAT_API_URL`). Playwright starts Next.js on port `3030` via `playwright.config.ts` unless `MDCHAT_NO_WEB_SERVER=1` and `MDCHAT_BASE_URL` point at your own dev server. The spec checks `/health`, **seeds a post through `POST /posts`**, then drives the Japanese UI (channel click, summarize, **AI Summary**). CI does not run this job yet; it needs a live API and Postgres.
+With PostgreSQL and the API running, execute `npm run test:e2e` from the repo root (default API `http://127.0.0.1:8000`, override with `MDCHAT_API_URL`). Playwright starts Next.js on port `3030` via `playwright.config.ts` unless `MDCHAT_NO_WEB_SERVER=1` and `MDCHAT_BASE_URL` point at your own dev server. The spec checks `/health`, **seeds a post through `POST /posts`**, then drives the Japanese UI (channel click, summarize, **AI Summary**). GitHub Actions runs the same flow in the **`e2e`** job (Postgres service + uvicorn + Playwright).
 
 ## MVP feature set
 
