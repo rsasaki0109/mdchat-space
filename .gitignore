@@ -11,6 +11,7 @@ __pycache__/
 .env.local
 .DS_Store
 postgres_data/
+data/channels/e2e/
 data/exports/
 test-results/
 playwright-report/
