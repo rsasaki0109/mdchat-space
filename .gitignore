@@ -12,6 +12,8 @@ __pycache__/
 .env.local
 .DS_Store
 postgres_data/
+# Never commit local thread Markdown (demo / dev / E2E); keep only placeholder.
+data/channels/**/*.md
 data/channels/e2e/
 data/exports/
 test-results/
