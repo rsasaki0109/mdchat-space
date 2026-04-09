@@ -26,6 +26,7 @@ function ChannelBranch({
     <li className="space-y-2">
       <button
         type="button"
+        aria-label={node.path}
         onClick={() => onSelect(node.path)}
         className={`flex w-full items-center justify-between rounded-2xl px-3 py-2 text-left transition ${
           selected

@@ -47,12 +47,16 @@ test.describe("dashboard (ja)", () => {
   test("channel tree, thread from seed, summarize", async ({ page }) => {
     test.setTimeout(90_000);
 
+    const treeLoaded = page.waitForResponse(
+      (response) => response.url().includes("/channels/tree") && response.ok(),
+      { timeout: 60_000 },
+    );
     await page.goto("/", { waitUntil: "domcontentloaded" });
+    await treeLoaded;
 
     await expect(page.getByRole("heading", { name: "会話のディレクトリ" })).toBeVisible();
-    const channelButton = page.getByRole("button", { name: /\/e2e\/play/ });
-    const emptyChannels = page.getByText("まだチャンネルがありません。投稿すると自動で階層が作られます。");
-    await expect(channelButton.or(emptyChannels)).toBeVisible({ timeout: 30_000 });
+    const channelButton = page.getByRole("button", { name: "/e2e/play", exact: true });
+    await expect(channelButton).toBeVisible({ timeout: 60_000 });
 
     await channelButton.click();
 
