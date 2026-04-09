@@ -1,4 +1,7 @@
+"use client";
+
 import type { ChannelNode } from "@/lib/types";
+import { useUiLocale } from "@/lib/ui-locale";
 
 
 type ChannelSidebarProps = {
@@ -54,20 +57,17 @@ function ChannelBranch({
 
 
 export function ChannelSidebar({ channels, selectedChannel, onSelect }: ChannelSidebarProps) {
+  const { t } = useUiLocale();
   return (
     <aside className="panel h-full p-5">
       <div className="mb-5">
-        <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Channels</p>
-        <h2 className="mt-2 text-xl font-semibold text-ink">会話のディレクトリ</h2>
-        <p className="mt-2 text-sm leading-6 text-slate-600">
-          チャンネル構造はそのまま Markdown の保存先になります。
-        </p>
+        <p className="text-xs uppercase tracking-[0.25em] text-slate-500">{t.sidebarChannelsLabel}</p>
+        <h2 className="mt-2 text-xl font-semibold text-ink">{t.sidebarTitle}</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-600">{t.sidebarDescription}</p>
       </div>
 
       {channels.length === 0 ? (
-        <div className="panel-muted p-4 text-sm text-slate-600">
-          まだチャンネルがありません。投稿すると自動で階層が作られます。
-        </div>
+        <div className="panel-muted p-4 text-sm text-slate-600">{t.sidebarEmpty}</div>
       ) : (
         <ul className="space-y-3">
           {channels.map((node) => (

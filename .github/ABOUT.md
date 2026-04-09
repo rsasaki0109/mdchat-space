@@ -42,4 +42,4 @@ gh repo edit \
 
 ## Social preview
 
-リポジトリ **Settings → General → Social preview** で `README` 先頭付近のスクリーンショット（`docs/screenshots/`）を選ぶと、共有時の見え方が良くなります。
+リポジトリ **Settings → General → Social preview** で README 用の画像を選ぶと、共有時の見え方が良くなります。英語 README 向けは `docs/screenshots/en/`、日本語は `docs/screenshots/ja/` の PNG が使えます。

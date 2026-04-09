@@ -8,6 +8,7 @@ import { ChannelSidebar } from "@/components/channel-sidebar";
 import { Composer } from "@/components/composer";
 import { PostList } from "@/components/post-list";
 import { ThreadPanel } from "@/components/thread-panel";
+import { useUiLocale } from "@/lib/ui-locale";
 
 
 function flattenChannels(nodes: ChannelNode[]): string[] {
@@ -16,6 +17,7 @@ function flattenChannels(nodes: ChannelNode[]): string[] {
 
 
 export function Dashboard() {
+  const { t } = useUiLocale();
   const pendingThreadRef = useRef<{ channel: string; threadId: string } | null>(null);
   const [channels, setChannels] = useState<ChannelNode[]>([]);
   const [selectedChannel, setSelectedChannel] = useState("/general");
@@ -99,7 +101,7 @@ export function Dashboard() {
   useEffect(() => {
     startTransition(() => {
       refreshWorkspace("/general").catch((caught) => {
-        setError(caught instanceof Error ? caught.message : "初期ロードに失敗しました。");
+        setError(caught instanceof Error ? caught.message : t.loadFailed);
       });
     });
   }, []);
@@ -168,7 +170,7 @@ export function Dashboard() {
   function runAction(action: () => Promise<void>) {
     startTransition(() => {
       action().catch((caught) => {
-        setError(caught instanceof Error ? caught.message : "操作に失敗しました。");
+        setError(caught instanceof Error ? caught.message : t.actionFailed);
       });
     });
   }
@@ -178,15 +180,12 @@ export function Dashboard() {
       <section className="mx-auto max-w-[1800px]">
         <header className="mb-6 grid gap-4 lg:grid-cols-[1.4fr,0.9fr]">
           <div className="panel p-6">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Markdown First Chat</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t.heroKicker}</p>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink md:text-4xl">
-              会話を UI ではなく
-              <span className="block text-amber-800">Markdown 資産として残す</span>
+              {t.heroTitleLine1}
+              <span className="block text-amber-800">{t.heroTitleLine2}</span>
             </h1>
-            <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600 md:text-base">
-              `mdchat-space` は、本文をすべて Markdown ファイルで保存し、メタ情報だけを PostgreSQL に持つ OSS チャットです。
-              UI はただのクライアントで、データ自体はいつでも外へ持ち出せます。
-            </p>
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600 md:text-base">{t.heroBody}</p>
           </div>
 
           <div className="panel p-6">
@@ -211,13 +210,13 @@ export function Dashboard() {
 
             <div className="mt-5">
               <label className="text-sm font-medium text-slate-700">
-                AI 検索
+                {t.aiSearchLabel}
                 <div className="mt-2 flex gap-2">
                   <input
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 outline-none transition focus:border-amber-500"
-                    placeholder="GNSS の誤差, ログ保存, 方針整理..."
+                    placeholder={t.aiSearchPlaceholder}
                   />
                   <button
                     type="button"
@@ -225,7 +224,7 @@ export function Dashboard() {
                     disabled={isPending}
                     className="rounded-full bg-amber-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-amber-800 disabled:cursor-not-allowed disabled:bg-slate-300"
                   >
-                    検索
+                    {t.searchButton}
                   </button>
                 </div>
               </label>
@@ -282,9 +281,9 @@ export function Dashboard() {
 
           <div className="space-y-6">
             <Composer
-              title="新しい投稿"
-              description="選択中のチャンネルに Markdown を残します。チャンネル名を直接変えると、新しい階層もそのまま作れます。"
-              submitLabel={isPending ? "処理中..." : "投稿する"}
+              title={t.composerTitle}
+              description={t.composerDescription}
+              submitLabel={isPending ? t.composerSubmitPending : t.composerSubmit}
               author={rootAuthor}
               channel={rootChannel}
               body={rootBody}
