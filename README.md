@@ -27,6 +27,16 @@ Thread view after **Summarize**.
 
 Japanese screenshots live in [`docs/screenshots/ja/`](docs/screenshots/ja/); see [`README.ja.md`](README.ja.md).
 
+## GitHub Pages (static demo)
+
+A **browser-only** demo (no API server) ships via the workflow [`.github/workflows/github-pages-demo.yml`](.github/workflows/github-pages-demo.yml). Data lives in `sessionStorage` for that tab only.
+
+1. In the GitHub repo: **Settings → Pages → Build and deployment**, set **Source** to **GitHub Actions**.
+2. Push to `main` (or run the **Deploy Pages demo** workflow manually). The site will be at `https://<user>.github.io/<repo>/` (for example `https://rsasaki0109.github.io/mdchat-space/`).
+3. English labels: append **`?lang=en`** to the URL as usual.
+
+Local build: `NEXT_PUBLIC_BASE_PATH=/<repo> npm run build:demo` (omit `NEXT_PUBLIC_BASE_PATH` for root hosting).
+
 ## Design principles
 
 ### 1. Data ownership

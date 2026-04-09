@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 
-import { api } from "@/lib/api";
+import { api, isMdchatDemo } from "@/lib/api";
 import type { ChannelNode, PostSummary, SearchResponse, ThreadResponse } from "@/lib/types";
 import { ChannelSidebar } from "@/components/channel-sidebar";
 import { Composer } from "@/components/composer";
@@ -219,24 +219,28 @@ export function Dashboard() {
           </div>
 
           <div className="panel p-6">
-            <div className="flex flex-wrap gap-3">
-              <a
-                href={api.exportMarkdownUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-full bg-slateblue px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
-              >
-                Export Markdown
-              </a>
-              <a
-                href={api.exportJsonUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-amber-400 hover:text-amber-800"
-              >
-                Export JSON
-              </a>
-            </div>
+            {isMdchatDemo ? (
+              <p className="text-sm leading-6 text-amber-900">{t.demoExportsNote}</p>
+            ) : (
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href={api.exportMarkdownUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full bg-slateblue px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
+                >
+                  Export Markdown
+                </a>
+                <a
+                  href={api.exportJsonUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-amber-400 hover:text-amber-800"
+                >
+                  Export JSON
+                </a>
+              </div>
+            )}
 
             <div className="mt-5">
               <label className="text-sm font-medium text-slate-700">
@@ -290,6 +294,12 @@ export function Dashboard() {
             </div>
           </div>
         </header>
+
+        {isMdchatDemo ? (
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-950">
+            {t.demoModeBanner}
+          </div>
+        ) : null}
 
         {error ? (
           <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
