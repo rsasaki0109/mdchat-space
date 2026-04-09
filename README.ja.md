@@ -13,15 +13,19 @@
 
 **GitHub の About 欄**（Description / Topics / Social preview）の推奨文と `gh` 例は、[`.github/ABOUT.md`](.github/ABOUT.md) にまとめています。
 
-## UI Preview
+UI の表示言語は既定で **日本語**です。英語ラベルに切り替えるには URL に **`?lang=en`** を付けます（例: `http://localhost:3000/?lang=en`）。
+
+## UI Preview（日本語）
 
 ダッシュボード全体（チャンネル階層・投稿一覧・スレッド）。
 
-![Dashboard UI](docs/screenshots/dashboard.png)
+![Dashboard UI（日本語）](docs/screenshots/ja/dashboard.png)
 
 スレッド表示と AI 要約（「要約」ボタン実行後）。
 
-![Thread view with AI summary](docs/screenshots/thread-summary.png)
+![Thread view with AI summary（日本語）](docs/screenshots/ja/thread-summary.png)
+
+英語版の画面例は [`docs/screenshots/en/`](docs/screenshots/en/) と [English README](README.md) を参照してください。
 
 ## 設計原則
 
@@ -173,7 +177,7 @@ npm run screenshots:install
 npm run screenshots
 ```
 
-- 画像は `docs/screenshots/` に上書き保存されます。
+- 画像は `docs/screenshots/ja/` と `docs/screenshots/en/` に上書き保存されます。
 - API が `8000` 以外のときは例: `MDCHAT_API_URL=http://127.0.0.1:8010 npm run screenshots`
 - すでに `npm run dev:web` を動かしている場合は `MDCHAT_REUSE_WEB=1` を付けるか、一度止めてから実行してください。
 - 自前で Web を起動する場合は `MDCHAT_NO_WEB_SERVER=1 MDCHAT_BASE_URL=http://localhost:3000 npm run screenshots`

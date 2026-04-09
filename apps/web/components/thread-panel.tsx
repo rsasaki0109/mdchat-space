@@ -1,7 +1,11 @@
+"use client";
+
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import type { ThreadResponse } from "@/lib/types";
+import { intlLocaleForUi } from "@/lib/ui-strings";
+import { useUiLocale } from "@/lib/ui-locale";
 
 
 type ThreadPanelProps = {
@@ -19,12 +23,6 @@ type ThreadPanelProps = {
 };
 
 
-const dateFormatter = new Intl.DateTimeFormat("ja-JP", {
-  dateStyle: "medium",
-  timeStyle: "short",
-});
-
-
 export function ThreadPanel({
   thread,
   summary,
@@ -38,14 +36,18 @@ export function ThreadPanel({
   onReplyBodyChange,
   onReplySubmit,
 }: ThreadPanelProps) {
+  const { locale, t } = useUiLocale();
+  const dateFormatter = new Intl.DateTimeFormat(intlLocaleForUi(locale), {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+
   if (!thread) {
     return (
       <aside className="panel h-full p-5">
-        <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Thread</p>
-        <h2 className="mt-2 text-xl font-semibold text-ink">スレッドビュー</h2>
-        <p className="mt-3 text-sm leading-7 text-slate-600">
-          投稿を選ぶと、返信の流れ・Markdown 本文・AI 補助をここで扱えます。
-        </p>
+        <p className="text-xs uppercase tracking-[0.25em] text-slate-500">{t.threadEmptyKicker}</p>
+        <h2 className="mt-2 text-xl font-semibold text-ink">{t.threadEmptyTitle}</h2>
+        <p className="mt-3 text-sm leading-7 text-slate-600">{t.threadEmptyBody}</p>
       </aside>
     );
   }
@@ -54,9 +56,9 @@ export function ThreadPanel({
     <aside className="panel h-full p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Thread</p>
+          <p className="text-xs uppercase tracking-[0.25em] text-slate-500">{t.threadKicker}</p>
           <h2 className="mt-2 text-xl font-semibold text-ink">{thread.root.channel}</h2>
-          <p className="mt-2 text-sm text-slate-600">{thread.posts.length} posts in conversation</p>
+          <p className="mt-2 text-sm text-slate-600">{t.threadPostsInConversation(thread.posts.length)}</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -65,7 +67,7 @@ export function ThreadPanel({
             disabled={loading}
             className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-amber-400 hover:text-amber-800 disabled:cursor-not-allowed"
           >
-            要約
+            {t.summarize}
           </button>
           <button
             type="button"
@@ -73,7 +75,7 @@ export function ThreadPanel({
             disabled={loading}
             className="rounded-full bg-pine px-4 py-2 text-sm font-medium text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:bg-slate-300"
           >
-            返信生成
+            {t.generateReply}
           </button>
         </div>
       </div>
@@ -112,10 +114,10 @@ export function ThreadPanel({
       </div>
 
       <section className="panel-muted mt-5 p-4">
-        <h3 className="text-base font-semibold text-ink">返信を書く</h3>
+        <h3 className="text-base font-semibold text-ink">{t.replySectionTitle}</h3>
         <div className="mt-4 grid gap-3">
           <label className="text-sm font-medium text-slate-700">
-            投稿者
+            {t.fieldAuthor}
             <input
               value={replyAuthor}
               onChange={(event) => onReplyAuthorChange(event.target.value)}
@@ -123,7 +125,7 @@ export function ThreadPanel({
             />
           </label>
           <label className="text-sm font-medium text-slate-700">
-            Markdown
+            {t.fieldMarkdown}
             <textarea
               value={replyBody}
               onChange={(event) => onReplyBodyChange(event.target.value)}
@@ -137,7 +139,7 @@ export function ThreadPanel({
             disabled={loading}
             className="rounded-full bg-slateblue px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
           >
-            スレッドに返信
+            {t.replySubmit}
           </button>
         </div>
       </section>

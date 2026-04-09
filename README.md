@@ -13,15 +13,19 @@ The goal is not to trap chats inside a product, but to keep conversations as dur
 
 For GitHub **About** (description, topics, social preview) and `gh` examples, see [`.github/ABOUT.md`](.github/ABOUT.md).
 
-## UI preview
+The UI defaults to **Japanese**. Append **`?lang=en`** to the URL for English labels (for example `http://localhost:3000/?lang=en`).
 
-Full dashboard (channel tree, thread list, composer).
+## UI preview (English)
 
-![Dashboard UI](docs/screenshots/dashboard.png)
+Full dashboard (channel tree, thread list, composer). Captured with `?lang=en`.
 
-Thread view after running **Summarize** (要約).
+![Dashboard UI (English)](docs/screenshots/en/dashboard.png)
 
-![Thread view with AI summary](docs/screenshots/thread-summary.png)
+Thread view after **Summarize**.
+
+![Thread view with AI summary (English)](docs/screenshots/en/thread-summary.png)
+
+Japanese screenshots live in [`docs/screenshots/ja/`](docs/screenshots/ja/); see [`README.ja.md`](README.ja.md).
 
 ## Design principles
 
@@ -167,7 +171,7 @@ npm run screenshots:install
 npm run screenshots
 ```
 
-- Images are written to `docs/screenshots/`.
+- Images are written to `docs/screenshots/ja/` and `docs/screenshots/en/` (two locales).
 - If the API is not on port 8000: `MDCHAT_API_URL=http://127.0.0.1:8010 npm run screenshots`
 - If you already run `npm run dev:web`, stop it or set `MDCHAT_REUSE_WEB=1`, or Playwright’s dev server may conflict.
 - To use only your own dev server: `MDCHAT_NO_WEB_SERVER=1 MDCHAT_BASE_URL=http://localhost:3000 npm run screenshots`

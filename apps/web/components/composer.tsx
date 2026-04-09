@@ -1,3 +1,7 @@
+"use client";
+
+import { useUiLocale } from "@/lib/ui-locale";
+
 type ComposerProps = {
   title: string;
   description: string;
@@ -28,6 +32,7 @@ export function Composer({
   disableChannelEdit = false,
   disabled = false,
 }: ComposerProps) {
+  const { t } = useUiLocale();
   return (
     <section className="panel p-5">
       <div className="mb-4 flex items-start justify-between gap-3">
@@ -47,17 +52,17 @@ export function Composer({
 
       <div className="grid gap-3 md:grid-cols-[180px,1fr]">
         <label className="text-sm font-medium text-slate-700">
-          投稿者
+          {t.fieldAuthor}
           <input
             value={author}
             onChange={(event) => onAuthorChange(event.target.value)}
             className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 outline-none transition focus:border-amber-500"
-            placeholder="ryohei"
+            placeholder={t.authorPlaceholder}
           />
         </label>
 
         <label className="text-sm font-medium text-slate-700">
-          チャンネル
+          {t.fieldChannel}
           <input
             value={channel}
             onChange={(event) => onChannelChange(event.target.value)}
@@ -69,13 +74,13 @@ export function Composer({
       </div>
 
       <label className="mt-4 block text-sm font-medium text-slate-700">
-        Markdown
+        {t.fieldMarkdown}
         <textarea
           value={body}
           onChange={(event) => onBodyChange(event.target.value)}
           rows={8}
           className="mt-2 w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 font-mono text-sm outline-none transition focus:border-amber-500"
-          placeholder="会話をそのまま資産化できるように、結論と前提を Markdown で残します。"
+          placeholder={t.bodyPlaceholder}
         />
       </label>
     </section>
