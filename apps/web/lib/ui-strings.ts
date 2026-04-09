@@ -42,6 +42,8 @@ export type UiStrings = {
   cancelEdit: string;
   deleteThread: string;
   deleteThreadConfirm: string;
+  demoModeBanner: string;
+  demoExportsNote: string;
 };
 
 const ja: UiStrings = {
@@ -88,6 +90,9 @@ const ja: UiStrings = {
   cancelEdit: "キャンセル",
   deleteThread: "スレッドを削除",
   deleteThreadConfirm: "このスレッドとすべての返信を削除します。よろしいですか？",
+  demoModeBanner:
+    "デモモード: データはこのブラウザの sessionStorage にだけ保存され、他のユーザーとは共有されません。タブを閉じると消えます。",
+  demoExportsNote: "デモではエクスポートは利用できません（API サーバーなし）。",
 };
 
 const en: UiStrings = {
@@ -138,6 +143,9 @@ const en: UiStrings = {
   cancelEdit: "Cancel",
   deleteThread: "Delete thread",
   deleteThreadConfirm: "Delete this thread and all replies permanently?",
+  demoModeBanner:
+    "Demo: data stays in this browser (sessionStorage only). Other visitors do not see your posts. Closing the tab clears it.",
+  demoExportsNote: "Exports are unavailable in the static demo (no API server).",
 };
 
 export function getUiStrings(locale: UiLocale): UiStrings {
