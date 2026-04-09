@@ -2,6 +2,8 @@
 
 GitHub のリポジトリページ右側の **About** は、Web 上の設定のみ反映されます（このファイルは自動同期されません）。次をコピーして貼ると楽です。
 
+既定のリポジトリ README は英語（[`README.md`](../README.md)）です。日本語は [`README.ja.md`](../README.ja.md) を参照してください。
+
 ## Description（1 行・英語推奨）
 
 ```text

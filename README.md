@@ -1,33 +1,35 @@
 # mdchat-space
 
-`mdchat-space` は、小規模コミュニティ向けの Markdown-first OSS チャットです。
+**Languages:** English (this file) · [日本語 README](README.ja.md)
 
-- 本文は必ず `.md` として保存
-- UI は API のクライアントに徹する
-- いつでも Markdown / JSON で持ち出せる
-- UI が消えても、会話はファイルとして残る
+`mdchat-space` is a Markdown-first, self-hosted chat backend and UI for small communities.
 
-このプロジェクトの中心は「チャットを囲い込むこと」ではなく、「会話を長く使える資産にすること」です。
+- Message bodies are always stored as `.md` files on disk.
+- The web UI is a thin API client.
+- You can export everything as Markdown (zip) or JSON at any time.
+- If the UI goes away, conversations still exist as plain files.
 
-**GitHub の About 欄**（Description / Topics / Social preview）の推奨文と `gh` 例は、[`.github/ABOUT.md`](.github/ABOUT.md) にまとめています。
+The goal is not to trap chats inside a product, but to keep conversations as durable, portable assets.
 
-## UI Preview
+For GitHub **About** (description, topics, social preview) and `gh` examples, see [`.github/ABOUT.md`](.github/ABOUT.md).
 
-ダッシュボード全体（チャンネル階層・投稿一覧・スレッド）。
+## UI preview
+
+Full dashboard (channel tree, thread list, composer).
 
 ![Dashboard UI](docs/screenshots/dashboard.png)
 
-スレッド表示と AI 要約（「要約」ボタン実行後）。
+Thread view after running **Summarize** (要約).
 
 ![Thread view with AI summary](docs/screenshots/thread-summary.png)
 
-## 設計原則
+## Design principles
 
-### 1. データ所有
+### 1. Data ownership
 
-各投稿は Markdown ファイルとして保存されます。本文は普通のテキストエディタで読めます。
+Each post is a Markdown file with YAML front matter. You can read and edit bodies in any text editor.
 
-例:
+Example:
 
 ```md
 ---
@@ -44,7 +46,7 @@ GNSS の誤差を議論するスレッドです。
 都市部でのマルチパスと、低速走行時のふらつきを分けて観測したいです。
 ```
 
-保存先はチャンネル階層と一致します。
+On disk, paths mirror channel paths:
 
 ```text
 data/channels/general/...
@@ -52,9 +54,9 @@ data/channels/dev/gnss/...
 data/channels/ops/announcements/...
 ```
 
-### 2. API ファースト
+### 2. API-first
 
-UI は Next.js ですが、全機能は FastAPI 経由で操作できます。
+The UI is Next.js, but every feature is available through the FastAPI HTTP API.
 
 - `GET /channels/tree`
 - `GET /posts?channel=/dev/gnss`
@@ -66,68 +68,62 @@ UI は Next.js ですが、全機能は FastAPI 経由で操作できます。
 - `GET /export/md`
 - `GET /export/json`
 
-### 3. エクスポート可能
+### 3. Exportable by design
 
-- `GET /export/md`: Markdown データを zip で出力
-- `GET /export/json`: チャンネル構造と全投稿を JSON で出力
+- `GET /export/md` — zip archive of Markdown under `data/channels/`
+- `GET /export/json` — channels tree plus all posts with bodies
 
-### 4. シンプル設計
+### 4. Simple storage model
 
-- PostgreSQL はメタ情報だけを持つ
-- 本文は Markdown ファイルだけが正本
-- 検索は Markdown 本文を直接読む
-- AI はローカルな軽量ロジックをデフォルト実装し、外部 LLM は必須にしない
+- PostgreSQL holds metadata (channels, post ids, excerpts, thread structure).
+- Markdown files are the **source of truth** for bodies.
+- Search reads Markdown content from disk.
+- Default “AI” features use small, local heuristics so external LLMs are optional.
 
-## アーキテクチャ
+## Architecture
 
 ```text
 apps/
   api/    FastAPI + SQLAlchemy
   web/    Next.js + Tailwind CSS
 data/
-  channels/  Markdown 本文
+  channels/  Markdown bodies
 ```
 
-### バックエンド
+### Backend
 
-- FastAPI
-- SQLAlchemy
-- PostgreSQL
-- Markdown front matter 保存
-- export / search / AI 補助 API
+- FastAPI, SQLAlchemy, PostgreSQL
+- Posts written as front matter + Markdown body
+- Export, search, and lightweight AI helper endpoints
 
-### フロントエンド
+### Frontend
 
-- Next.js App Router
-- Tailwind CSS
-- サイドバー: チャンネル階層
-- メイン: 投稿一覧と新規投稿
-- 右ペイン: スレッド、要約、返信生成
+- Next.js App Router, Tailwind CSS
+- Left: channel tree
+- Center: composer and thread list
+- Right: thread reader, summarize, reply draft
 
-### AI 方針
+### AI (MVP)
 
-MVP ではロックインを避けるため、外部 LLM 必須にはしていません。
+To avoid vendor lock-in, external LLMs are not required.
 
-- `POST /ai/search`
-  - Markdown 本文に対してキーワード一致 + 簡易ベクトル類似度で検索
-- `POST /ai/summarize`
-  - スレッドの参加者・主要語・先頭文を使った要約
-- `POST /ai/reply`
-  - スレッドの流れから返信テンプレートを生成
+- `POST /ai/search` — keyword matching plus a simple embedding similarity score over Markdown bodies
+- `POST /ai/summarize` — heuristics from participants, salient terms, and early lines
+- `POST /ai/reply` — template-style reply from recent thread context
 
-この実装は差し替え前提です。後から OpenAI やローカル LLM に置き換えても、保存形式は変わりません。
+These implementations are meant to be swapped later (OpenAI, local LLMs, pgvector, and so on) without changing how posts are stored.
 
-## セットアップ
+## Setup
 
-### 1. PostgreSQL を起動
+### 1. Start PostgreSQL
 
 ```bash
 docker compose up -d
 ```
 
-デフォルトでは `postgresql+psycopg://mdchat:mdchat@localhost:5433/mdchat` を使います。
+Default DSN: `postgresql+psycopg://mdchat:mdchat@localhost:5433/mdchat`
 
-### 2. API を起動
+### 2. Run the API
 
 ```bash
 cp .env.example .env
@@ -138,15 +134,15 @@ cd apps/api
 uvicorn app.main:app --reload --port 8000
 ```
 
-初回起動時に:
+On first startup the API will:
 
-- テーブルを自動作成
-- `data/channels/` を自動生成
-- デモ投稿を自動投入
+- Create tables
+- Ensure `data/channels/` exists
+- Seed demo threads when `SEED_DEMO_DATA=true`
 
-### 3. Web UI を起動
+### 3. Run the web UI
 
-別ターミナルで:
+In another terminal:
 
 ```bash
 cp apps/web/.env.local.example apps/web/.env.local
@@ -154,14 +150,16 @@ npm install
 npm run dev:web
 ```
 
-ブラウザ:
+Open:
 
 - Web UI: `http://localhost:3000`
-- API Docs: `http://localhost:8000/docs`
+- API docs: `http://localhost:8000/docs`
 
-### README 用スクショの再生成
+If port `8000` is already taken, run the API on another port (e.g. `8010`) and set `NEXT_PUBLIC_API_BASE_URL` in `apps/web/.env.local` to match.
 
-PostgreSQL と API を起動した状態で、リポジトリルートから次を実行します（Playwright が **別ポートの Next dev** を立ち上げます）。
+### Regenerate README screenshots
+
+With PostgreSQL and the API running, from the repo root (Playwright starts Next on a separate dev port):
 
 ```bash
 npm install
@@ -169,16 +167,14 @@ npm run screenshots:install
 npm run screenshots
 ```
 
-- 画像は `docs/screenshots/` に上書き保存されます。
-- API が `8000` 以外のときは例: `MDCHAT_API_URL=http://127.0.0.1:8010 npm run screenshots`
-- すでに `npm run dev:web` を動かしている場合は `MDCHAT_REUSE_WEB=1` を付けるか、一度止めてから実行してください。
-- 自前で Web を起動する場合は `MDCHAT_NO_WEB_SERVER=1 MDCHAT_BASE_URL=http://localhost:3000 npm run screenshots`
+- Images are written to `docs/screenshots/`.
+- If the API is not on port 8000: `MDCHAT_API_URL=http://127.0.0.1:8010 npm run screenshots`
+- If you already run `npm run dev:web`, stop it or set `MDCHAT_REUSE_WEB=1`, or Playwright’s dev server may conflict.
+- To use only your own dev server: `MDCHAT_NO_WEB_SERVER=1 MDCHAT_BASE_URL=http://localhost:3000 npm run screenshots`
 
-スレッドが開かず `/thread` が 500 になる場合は、DB に行だけ残って `data/channels/` の Markdown が無い状態のことがあります。その場合は Postgres ボリュームを捨てて API を起動し直すと、シードが Markdown ごと再作成されます（`docker compose down -v` 後に `docker compose up -d`）。
+If `/thread` returns 500 while the UI loads channels, the database rows may exist without matching Markdown files under `data/channels/`. In that case reset the Postgres volume and restart so seeding recreates files: `docker compose down -v`, then `docker compose up -d`.
 
-### API テスト（SQLite・ローカルのみ）
-
-開発用依存を入れたうえで、リポジトリルートから実行できます（システムに別の pytest プラグインが入っている場合の衝突を避けるため `PYTEST_DISABLE_PLUGIN_AUTOLOAD` を付けています）。
+### API tests (SQLite, local)
 
 ```bash
 source .venv/bin/activate
@@ -186,20 +182,20 @@ pip install -r apps/api/requirements-dev.txt
 npm run test:api
 ```
 
-## 実装済み MVP
+`PYTEST_DISABLE_PLUGIN_AUTOLOAD=1` is set in the npm script to avoid broken third-party pytest plugins on some machines.
 
-- チャンネルベースのチャット
-- スレッド返信
-- ディレクトリ構造のチャンネル
-- Markdown 投稿
-- キーワード + 簡易 AI 検索
-- スレッド要約
-- 返信生成
-- Markdown / JSON export
+## MVP feature set
 
-## API 例
+- Channel-based chat and directory-shaped channel paths
+- Threaded replies
+- Markdown posts
+- Keyword + lightweight vector-style search over bodies
+- Thread summarize and reply draft helpers
+- Markdown zip + JSON export
 
-### 投稿作成
+## API examples
+
+### Create a post
 
 ```bash
 curl -X POST http://localhost:8000/posts \
@@ -211,7 +207,7 @@ curl -X POST http://localhost:8000/posts \
   }'
 ```
 
-### AI 検索
+### AI search
 
 ```bash
 curl -X POST http://localhost:8000/ai/search \
@@ -222,14 +218,12 @@ curl -X POST http://localhost:8000/ai/search \
   }'
 ```
 
-## なぜこの形か
+## Why Markdown-first
 
-一般的なチャットは UI が正本になりがちです。このプロジェクトでは逆に、
+Many chat products implicitly treat the UI or vendor cloud as the source of truth. Here the order is fixed:
 
-- 会話 → Markdown ファイルになる
-- Markdown ファイル → 検索可能な知識になる
-- 知識 → 人間にも AI にも再利用できる
+1. Conversation → Markdown files on disk  
+2. Markdown files → searchable, shareable knowledge  
+3. Knowledge → reusable for people and tools  
 
-という順序を固定しています。
-
-10 年後に UI を入れ替えても、残るべきものは会話そのものです。
+Swap the UI in ten years; what should survive is the conversation archive itself.
