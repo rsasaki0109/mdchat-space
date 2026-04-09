@@ -27,6 +27,16 @@ UI の表示言語は既定で **日本語**です。英語ラベルに切り替
 
 英語版の画面例は [`docs/screenshots/en/`](docs/screenshots/en/) と [English README](README.md) を参照してください。
 
+## GitHub Pages（静的デモ）
+
+API なしの**ブラウザ内デモ**を [`.github/workflows/github-pages-demo.yml`](.github/workflows/github-pages-demo.yml) で公開できます。データはそのタブの `sessionStorage` にだけ残ります。
+
+1. リポジトリの **Settings → Pages → Build and deployment** で **Source** を **GitHub Actions** にする。
+2. `main` にプッシュするか、**Deploy Pages demo** ワークフローを手動実行する。公開 URL は `https://<ユーザー>.github.io/<リポジトリ>/` 形式（例: `https://rsasaki0109.github.io/mdchat-space/`）。
+3. 英語 UI は URL に **`?lang=en`** を付ける。
+
+ローカルで同じ成果物を試す: `NEXT_PUBLIC_BASE_PATH=/<リポジトリ名> npm run build:demo`（ルート配下に置く場合は `NEXT_PUBLIC_BASE_PATH` は省略）。
+
 ## 設計原則
 
 ### 1. データ所有
