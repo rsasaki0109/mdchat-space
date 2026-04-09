@@ -34,7 +34,7 @@ export function Composer({
 }: ComposerProps) {
   const { t } = useUiLocale();
   return (
-    <section className="panel p-5">
+    <section className="panel p-5" data-testid="post-composer">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-ink">{title}</h2>

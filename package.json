@@ -27,6 +27,7 @@
     "build:web": "npm --workspace apps/web run build",
     "screenshots": "playwright test tests/ui-screenshots.spec.ts",
     "screenshots:install": "playwright install chromium",
+    "test:e2e": "playwright test tests/ui-e2e.spec.ts",
     "test:api": "bash -c 'cd apps/api && PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 ../../.venv/bin/python -m pytest tests -q'"
   },
   "devDependencies": {

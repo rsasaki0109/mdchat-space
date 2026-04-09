@@ -1,0 +1,43 @@
+# CI: web build + API pytest. Python deps use a venv at the repository root: `.venv/`
+# (same as `npm run test:api`, which runs `../../.venv/bin/python` from `apps/api`).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run build:web
+
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Create venv and install API dependencies
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install -U pip
+          .venv/bin/pip install -r apps/api/requirements.txt -r apps/api/requirements-dev.txt
+      - name: Run API tests
+        env:
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+          # From repo root, `app` resolves like `cd apps/api && pytest tests` when cwd is on PYTHONPATH.
+          PYTHONPATH: ${{ github.workspace }}/apps/api
+        run: .venv/bin/python -m pytest apps/api/tests -q
