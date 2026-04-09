@@ -9,10 +9,11 @@
 body {
   min-height: 100vh;
   color: #1f2937;
+  /* ニュートラル基調 + ごく弱い暖色／スレート（緑汎光は撤去してトーンを統一） */
   background:
-    radial-gradient(circle at top left, rgba(251, 191, 36, 0.18), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(20, 83, 45, 0.1), transparent 24%),
-    linear-gradient(180deg, #f8f5ed 0%, #f3efe5 45%, #eef2f7 100%);
+    radial-gradient(ellipse 130% 90% at 20% -15%, rgba(254, 252, 232, 0.85), transparent 52%),
+    radial-gradient(ellipse 100% 70% at 95% 5%, rgba(241, 245, 249, 0.9), transparent 48%),
+    linear-gradient(165deg, #fafaf9 0%, #f4f4f5 38%, #f1f5f9 100%);
 }
 
 * {

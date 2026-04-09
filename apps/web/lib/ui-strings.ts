@@ -44,6 +44,11 @@ export type UiStrings = {
   deleteThread: string;
   deleteThreadConfirm: string;
   demoModeBanner: string;
+  dmDemoKicker: string;
+  dmDemoTitle: string;
+  dmDemoBody: string;
+  dmDemoNew: string;
+  dmDemoEmpty: string;
   demoExportsNote: string;
   stampsHeading: string;
   addCustomStamp: string;
@@ -100,6 +105,12 @@ const ja: UiStrings = {
   deleteThreadConfirm: "このスレッドとすべての返信を削除します。よろしいですか？",
   demoModeBanner:
     "デモ: データはこのブラウザの sessionStorage にだけ保存されます。他の人と共有する機能はなく、試し打ち用です。タブを閉じると消えます。",
+  dmDemoKicker: "Demo · DM",
+  dmDemoTitle: "DM ルーム",
+  dmDemoBody:
+    "この端末内だけのメモ用ルームです。`/dm/…` チャンネルに投稿がひも付き、一覧から戻れます。",
+  dmDemoNew: "新しい DM ルーム",
+  dmDemoEmpty: "まだルームがありません。上のボタンで作成できます。",
   demoExportsNote: "デモではエクスポートは利用できません（API サーバーなし）。",
   stampsHeading: "スタンプ",
   addCustomStamp: "オリジナル画像スタンプを追加",
@@ -160,6 +171,12 @@ const en: UiStrings = {
   deleteThreadConfirm: "Delete this thread and all replies permanently?",
   demoModeBanner:
     "Demo only: data stays in this browser’s sessionStorage. There is no sharing with other people—just a local sandbox. Closing the tab clears it.",
+  dmDemoKicker: "Demo · DM",
+  dmDemoTitle: "DM rooms",
+  dmDemoBody:
+    "Local-only scratch rooms under `/dm/…`. Posts stay tied to this browser; use the list to jump back.",
+  dmDemoNew: "New DM room",
+  dmDemoEmpty: "No rooms yet. Create one with the button above.",
   demoExportsNote: "Exports are unavailable in the static demo (no API server).",
   stampsHeading: "Stamps",
   addCustomStamp: "Add custom image stamp",

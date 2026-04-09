@@ -13,6 +13,7 @@ import type {
 } from "@/lib/types";
 
 import type { MdchatApi } from "./api-types";
+import { runBrowserDemoSeed } from "./demo-seed";
 import { rankPostsForSearch } from "./demo-search";
 
 
@@ -23,8 +24,8 @@ type ChannelMeta = {
   depth: number;
 };
 
-const STORAGE_KEY = "mdchat-space-demo-v4";
-const LEGACY_STORAGE_KEY = "mdchat-space-demo-v3";
+const STORAGE_KEY = "mdchat-space-demo-v6";
+const LEGACY_STORAGE_KEY = "mdchat-space-demo-v5";
 
 const BUILTIN_STAMPS: StampOut[] = [
   { id: "demo-stamp-thumbsup", slug: "thumbsup", label: "いいね", kind: "emoji", emoji_char: "👍", image_url: null },
@@ -39,6 +40,7 @@ type PersistShape = {
   posts: [string, ThreadPost][];
   stampReactions: [string, string, string][];
   customStamps: StampOut[];
+  dmRooms: string[];
 };
 
 type StampReactionRow = { postId: string; stampId: string; actorKey: string };
@@ -118,6 +120,24 @@ function createDemoApi(): MdchatApi {
   const posts = new Map<string, ThreadPost>();
   let stampReactions: StampReactionRow[] = [];
   let customStamps: StampOut[] = [];
+  let dmRoomOrder: string[] = [];
+
+  function isDmRoomPath(channelPath: string): boolean {
+    try {
+      const n = normalizeChannel(channelPath);
+      return /^\/dm\/[^/]+$/.test(n);
+    } catch {
+      return false;
+    }
+  }
+
+  function rememberDmRoom(channelPath: string): void {
+    if (!isDmRoomPath(channelPath)) {
+      return;
+    }
+    const n = normalizeChannel(channelPath);
+    dmRoomOrder = [n, ...dmRoomOrder.filter((p) => p !== n)];
+  }
 
   function stampCatalog(): StampOut[] {
     return [...BUILTIN_STAMPS, ...customStamps];
@@ -132,6 +152,7 @@ function createDemoApi(): MdchatApi {
       posts: [...posts.entries()],
       stampReactions: stampReactions.map((r) => [r.postId, r.stampId, r.actorKey]),
       customStamps: [...customStamps],
+      dmRooms: [...dmRoomOrder],
     };
     try {
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
@@ -155,6 +176,7 @@ function createDemoApi(): MdchatApi {
       posts.clear();
       stampReactions = [];
       customStamps = [];
+      dmRoomOrder = [];
       for (const [k, v] of data.channels ?? []) {
         channelRows.set(k, v);
       }
@@ -167,11 +189,13 @@ function createDemoApi(): MdchatApi {
         }
       }
       customStamps = data.customStamps ?? [];
+      dmRoomOrder = Array.isArray(data.dmRooms) ? [...data.dmRooms] : [];
     } catch {
       channelRows.clear();
       posts.clear();
       stampReactions = [];
       customStamps = [];
+      dmRoomOrder = [];
     }
   }
 
@@ -196,150 +220,7 @@ function createDemoApi(): MdchatApi {
   }
 
   function seed(): void {
-    const t = "2026-04-01T12:00:00+00:00";
-    const root1 = "11111111-1111-1111-1111-111111111111";
-    const root2 = "22222222-2222-2222-2222-222222222222";
-    const root3 = "33333333-3333-3333-3333-333333333333";
-    const reply1 = "44444444-4444-4444-4444-444444444444";
-    const root4 = "55555555-5555-5555-5555-555555555555";
-    const root5 = "66666666-6666-6666-6666-666666666666";
-    const root6 = "77777777-7777-7777-7777-777777777777";
-    const root7 = "88888888-8888-8888-8888-888888888888";
-
-    ensureChannelHierarchy("/general");
-    ensureChannelHierarchy("/oss/news");
-    ensureChannelHierarchy("/product/roadmap");
-    ensureChannelHierarchy("/dev/docs");
-    ensureChannelHierarchy("/ops/runbook");
-    ensureChannelHierarchy("/dev/backend");
-
-    const p1: ThreadPost = {
-      id: root1,
-      author: "yuki",
-      channel: "/general",
-      created_at: t,
-      updated_at: t,
-      body:
-        "# 今週ピックアップした OSS ネタ\n\n" +
-        "よく見ているリポジトリの **Releases / Security** をざっと眺めたメモです（デモ用の架空例です）。\n\n" +
-        "- ランタイムまわり: パッチ版は **リリースノートの「Security」節だけ先に読む** と早い\n" +
-        "- ライブラリ: メジャー上げは **破壊的変更のマイグレーション章** を一度通読\n" +
-        "- 供給鎖: ロックファイル更新後に **SBOM か依存グラフの差分** を残すと後で楽\n\n" +
-        "他に「この通知の見方イイよ」みたいなコツがあれば教えてください。",
-      thread_root_id: root1,
-      parent_post_id: null,
-      markdown_path: `demo/${slugPath("/general")}/${root1.slice(0, 8)}.md`,
-      stamps: [],
-    };
-    const p2: ThreadPost = {
-      id: reply1,
-      author: "ken",
-      channel: "/general",
-      created_at: "2026-04-01T12:30:00+00:00",
-      updated_at: "2026-04-01T12:30:00+00:00",
-      body:
-        "自分は **GitHub の Watch を Releases only** にして、週一回まとめて見るようにしてます。\n\n" +
-        "あと **Dependabot / Renovate の PR 本文に出る CVE リンク** から辿ると、影響範囲の判断が速いです。",
-      thread_root_id: root1,
-      parent_post_id: root1,
-      markdown_path: `demo/${slugPath("/general")}/${reply1.slice(0, 8)}.md`,
-      stamps: [],
-    };
-    const p3: ThreadPost = {
-      id: root2,
-      author: "yuki",
-      channel: "/general",
-      created_at: "2026-04-01T11:00:00+00:00",
-      updated_at: "2026-04-01T11:00:00+00:00",
-      body:
-        "# ライセンス変更のニュース、どう切り分けてる？\n\n" +
-        "「コアは OSS のまま、付帯ツールだけ商用」のような形が増えてきた印象です。**どのバイナリ／パッケージに何のライセンスが乗るか** を表にすると議論がズレにくいです。\n\n" +
-        "社内メモ用に、 SPDX 名と `NOTICE` の有無だけでもテンプレにしてあります。",
-      thread_root_id: root2,
-      parent_post_id: null,
-      markdown_path: `demo/${slugPath("/general")}/${root2.slice(0, 8)}.md`,
-      stamps: [],
-    };
-    const p4: ThreadPost = {
-      id: root3,
-      author: "marin",
-      channel: "/oss/news",
-      created_at: "2026-04-01T10:00:00+00:00",
-      updated_at: "2026-04-01T10:00:00+00:00",
-      body:
-        "# OSS メモ（短報）\n\n" +
-        "`/oss/news` に **リンク集・短文メモ** を置く想定のチャンネルです。\n\n" +
-        "- 気になった **CHANGELOG の一行** をコピペ + 一言コメント\n" +
-        "- **リリース日** とセキュリティ修正の有無をメモしておくとログ調査が速い\n\n" +
-        "※ 静的デモ用のサンプルです。",
-      thread_root_id: root3,
-      parent_post_id: null,
-      markdown_path: `demo/${slugPath("/oss/news")}/${root3.slice(0, 8)}.md`,
-      stamps: [],
-    };
-
-    const p5: ThreadPost = {
-      id: root4,
-      author: "aya",
-      channel: "/product/roadmap",
-      created_at: "2026-04-01T09:30:00+00:00",
-      updated_at: "2026-04-01T09:30:00+00:00",
-      body:
-        "# 今四半期のリリース方針（デモ）\n\n" +
-        "破壊的変更は **リリースノート** の冒頭へ。テンプレは **Markdown** で共有し、ログの後方互換注意も同じ粒度で書きたい。",
-      thread_root_id: root4,
-      parent_post_id: null,
-      markdown_path: `demo/${slugPath("/product/roadmap")}/${root4.slice(0, 8)}.md`,
-      stamps: [],
-    };
-
-    const p6: ThreadPost = {
-      id: root5,
-      author: "kenta",
-      channel: "/dev/docs",
-      created_at: "2026-04-01T09:15:00+00:00",
-      updated_at: "2026-04-01T09:15:00+00:00",
-      body:
-        "# API リファレンスとログ例（デモ）\n\n" +
-        "各 **API** のリクエスト例と、失敗時に **ログ** に出るコードを Markdown 表で対応付ける前提のメモ。",
-      thread_root_id: root5,
-      parent_post_id: null,
-      markdown_path: `demo/${slugPath("/dev/docs")}/${root5.slice(0, 8)}.md`,
-      stamps: [],
-    };
-
-    const p7: ThreadPost = {
-      id: root6,
-      author: "jun",
-      channel: "/ops/runbook",
-      created_at: "2026-04-01T09:00:00+00:00",
-      updated_at: "2026-04-01T09:00:00+00:00",
-      body:
-        "障害時は影響時間帯の **ログ** をそのまま貼る運用。**リリース** 直後だけログレベルを上げる手順も Markdown の runbook に分割。",
-      thread_root_id: root6,
-      parent_post_id: null,
-      markdown_path: `demo/${slugPath("/ops/runbook")}/${root6.slice(0, 8)}.md`,
-      stamps: [],
-    };
-
-    const p8: ThreadPost = {
-      id: root7,
-      author: "mika",
-      channel: "/dev/backend",
-      created_at: "2026-04-01T08:45:00+00:00",
-      updated_at: "2026-04-01T08:45:00+00:00",
-      body:
-        "# バックエンド雑記（デモ検索用）\n\n" +
-        "外部 **API** のレート制限で詰まったとき、まず **ログ** のステータス行だけ切り出してから本文を追うと迷子にならない。",
-      thread_root_id: root7,
-      parent_post_id: null,
-      markdown_path: `demo/${slugPath("/dev/backend")}/${root7.slice(0, 8)}.md`,
-      stamps: [],
-    };
-
-    for (const p of [p1, p2, p3, p4, p5, p6, p7, p8]) {
-      posts.set(p.id, p);
-    }
+    runBrowserDemoSeed(posts, ensureChannelHierarchy, rememberDmRoom);
   }
 
   load();
@@ -470,6 +351,7 @@ function createDemoApi(): MdchatApi {
         stamps: [],
       };
       posts.set(id, post);
+      rememberDmRoom(channelPath);
       persist();
       return post;
     },
@@ -511,6 +393,16 @@ function createDemoApi(): MdchatApi {
         posts.delete(pid);
       }
       stampReactions = stampReactions.filter((r) => !removeIds.has(r.postId));
+
+      const ch = normalizeChannel(root.channel);
+      if (isDmRoomPath(ch)) {
+        const anyRootLeft = [...posts.values()].some(
+          (p) => p.channel === ch && p.parent_post_id === null,
+        );
+        if (!anyRootLeft) {
+          dmRoomOrder = dmRoomOrder.filter((p) => p !== ch);
+        }
+      }
       persist();
     },
 
@@ -592,6 +484,19 @@ function createDemoApi(): MdchatApi {
         tail +
         hint;
       return { thread_id: thread.root.id, reply: text };
+    },
+
+    async listDmRooms() {
+      return [...dmRoomOrder];
+    },
+
+    async createDmRoom() {
+      const id = crypto.randomUUID();
+      const channel = `/dm/${id}`;
+      ensureChannelHierarchy(channel);
+      rememberDmRoom(channel);
+      persist();
+      return { channel };
     },
 
     async search(query: string, channel?: string | null, limit = 24) {

@@ -13,6 +13,10 @@ import type {
 } from "@/lib/types";
 
 
+export type DmRoomRef = {
+  channel: string;
+};
+
 export type MdchatApi = {
   getChannelsTree(): Promise<ChannelNode[]>;
   getPosts(channel: string): Promise<PostSummary[]>;
@@ -26,6 +30,8 @@ export type MdchatApi = {
   summarize(threadId: string): Promise<SummarizeResponse>;
   reply(threadId: string, instruction?: string): Promise<ReplyResponse>;
   search(query: string, channel?: string | null, limit?: number): Promise<SearchResponse>;
+  listDmRooms(): Promise<string[]>;
+  createDmRoom(): Promise<DmRoomRef>;
   exportMarkdownUrl: string;
   exportJsonUrl: string;
 };

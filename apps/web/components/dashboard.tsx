@@ -3,10 +3,12 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 
 import { api, isMdchatDemo } from "@/lib/api";
+import { demoDmRoomLabel } from "@/lib/demo-seed";
 import { tryNormalizeChannelPath } from "@/lib/channel-path";
 import type { ChannelNode, PostSummary, SearchResponse, StampOut, ThreadResponse } from "@/lib/types";
 import { ChannelSidebar } from "@/components/channel-sidebar";
 import { Composer } from "@/components/composer";
+import { DemoDmPanel } from "@/components/demo-dm-panel";
 import { PostList } from "@/components/post-list";
 import { ThreadPanel } from "@/components/thread-panel";
 import { useUiLocale } from "@/lib/ui-locale";
@@ -50,6 +52,18 @@ export function Dashboard() {
   const [isPending, startTransition] = useTransition();
   const [actorKey] = useState(readPersistedActorKey);
   const [stampCatalog, setStampCatalog] = useState<StampOut[]>([]);
+  const [dmRooms, setDmRooms] = useState<string[]>([]);
+
+  async function refreshDmRooms() {
+    if (!isMdchatDemo) {
+      return;
+    }
+    try {
+      setDmRooms(await api.listDmRooms());
+    } catch {
+      setDmRooms([]);
+    }
+  }
 
   async function loadChannels(preferredChannel?: string) {
     const tree = await api.getChannelsTree();
@@ -161,6 +175,12 @@ export function Dashboard() {
     api.getStamps().then(setStampCatalog).catch(() => setStampCatalog([]));
   }, []);
 
+  useEffect(() => {
+    if (isMdchatDemo) {
+      void refreshDmRooms();
+    }
+  }, []);
+
   async function handleCreateRootPost() {
     setError(null);
     const created = await api.createPost({
@@ -171,6 +191,7 @@ export function Dashboard() {
 
     setRootBody("");
     await refreshWorkspace(created.channel, created.id);
+    await refreshDmRooms();
   }
 
   async function handleCreateReply() {
@@ -188,6 +209,7 @@ export function Dashboard() {
 
     setReplyBody("");
     await refreshWorkspace(created.channel, created.thread_root_id);
+    await refreshDmRooms();
   }
 
   async function handleSummarize() {
@@ -224,6 +246,7 @@ export function Dashboard() {
     try {
       await api.deleteThread(thread.root.id);
       await refreshWorkspace(selectedChannel);
+      await refreshDmRooms();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : t.actionFailed);
       throw caught;
@@ -261,6 +284,26 @@ export function Dashboard() {
     });
   }
 
+  async function handleNewDmRoom() {
+    setError(null);
+    try {
+      const { channel } = await api.createDmRoom();
+      await refreshDmRooms();
+      setRootChannel(channel);
+      pendingThreadRef.current = null;
+      await refreshWorkspace(channel);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : t.actionFailed);
+    }
+  }
+
+  async function handleOpenDmRoom(channel: string) {
+    setError(null);
+    setRootChannel(channel);
+    pendingThreadRef.current = null;
+    await refreshWorkspace(channel);
+  }
+
   return (
     <main className="min-h-screen px-4 py-6 text-ink md:px-6 xl:px-8">
       <section className="mx-auto max-w-[1800px]">
@@ -276,7 +319,7 @@ export function Dashboard() {
 
           <div className="panel p-6">
             {isMdchatDemo ? (
-              <p className="text-sm leading-6 text-amber-900">{t.demoExportsNote}</p>
+              <p className="text-sm leading-6 text-slate-600">{t.demoExportsNote}</p>
             ) : (
               <div className="flex flex-wrap gap-3">
                 <a
@@ -367,7 +410,7 @@ export function Dashboard() {
         </header>
 
         {isMdchatDemo ? (
-          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-950">
+          <div className="mb-6 rounded-2xl border border-slate-200/90 bg-white/85 px-4 py-3 text-sm leading-6 text-slate-700 shadow-[inset_0_0_0_1px_rgba(251,191,36,0.12)]">
             {t.demoModeBanner}
           </div>
         ) : null}
@@ -379,16 +422,27 @@ export function Dashboard() {
         ) : null}
 
         <section className="grid gap-6 xl:grid-cols-[280px,1.1fr,0.95fr]">
-          <ChannelSidebar
-            channels={channels}
-            selectedChannel={selectedChannel}
-            onSelect={(channelPath) => {
-              pendingThreadRef.current = null;
-              setSelectedChannel(channelPath);
-              setRootChannel(channelPath);
-              runAction(() => loadPosts(channelPath));
-            }}
-          />
+          <div className="space-y-4">
+            {isMdchatDemo ? (
+              <DemoDmPanel
+                rooms={dmRooms}
+                disabled={isPending}
+                roomLabel={demoDmRoomLabel}
+                onNewRoom={() => runAction(() => handleNewDmRoom())}
+                onOpenRoom={(channel) => runAction(() => handleOpenDmRoom(channel))}
+              />
+            ) : null}
+            <ChannelSidebar
+              channels={channels}
+              selectedChannel={selectedChannel}
+              onSelect={(channelPath) => {
+                pendingThreadRef.current = null;
+                setSelectedChannel(channelPath);
+                setRootChannel(channelPath);
+                runAction(() => loadPosts(channelPath));
+              }}
+            />
+          </div>
 
           <div className="space-y-6">
             <Composer

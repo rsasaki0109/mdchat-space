@@ -12,7 +12,7 @@ import type {
   UpdatePostPayload,
 } from "@/lib/types";
 
-import type { MdchatApi } from "./api-types";
+import type { DmRoomRef, MdchatApi } from "./api-types";
 
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
@@ -129,6 +129,14 @@ export function createRealApi(): MdchatApi {
         method: "POST",
         body: JSON.stringify({ query, channel: channel ?? null, limit }),
       });
+    },
+    listDmRooms() {
+      return Promise.resolve([]);
+    },
+    async createDmRoom(): Promise<DmRoomRef> {
+      throw new Error(
+        "DM quick rooms are only available in static demo mode (NEXT_PUBLIC_MDCHAT_DEMO=1).",
+      );
     },
     exportMarkdownUrl: `${API_BASE}/export/md`,
     exportJsonUrl: `${API_BASE}/export/json`,

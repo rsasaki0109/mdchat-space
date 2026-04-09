@@ -132,6 +132,10 @@ To avoid vendor lock-in, external LLMs are not required.
 
 These implementations are meant to be swapped later (OpenAI, local LLMs, pgvector, and so on) without changing how posts are stored.
 
+### AI taxonomy (community note)
+
+For internal discussions, a **physical vs non-physical** split is often clearer than lumping “AI” with “robotics” alone: **physical AI** closes the loop with the real world (sense → decide → act: robots, embedded systems, factory automation, and some wearables). **Non-physical AI** stays mainly in the information domain (LLMs, recommender stacks, coding assistants). Robotics is then an implementation family under the physical side, alongside edge/cloud and sim-to-real as separate axes.
+
 ## Setup
 
 ### 1. Start PostgreSQL (or the full Docker stack)
