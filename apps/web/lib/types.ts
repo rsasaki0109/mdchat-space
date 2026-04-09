@@ -66,3 +66,8 @@ export type CreatePostPayload = {
   body: string;
   parent_post_id?: string | null;
 };
+
+export type UpdatePostPayload = {
+  author?: string;
+  body?: string;
+};

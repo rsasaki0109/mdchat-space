@@ -65,6 +65,8 @@ The UI is Next.js, but every feature is available through the FastAPI HTTP API.
 - `GET /channels/tree`
 - `GET /posts?channel=/dev/gnss`
 - `POST /posts`
+- `PATCH /posts/{id}` — update author/body (rewrites the existing Markdown file)
+- `DELETE /posts/{id}` — delete an entire thread (`id` must be the **root** post id)
 - `GET /thread/{id}`
 - `POST /ai/summarize`
 - `POST /ai/reply`
@@ -119,13 +121,28 @@ These implementations are meant to be swapped later (OpenAI, local LLMs, pgvecto
 
 ## Setup
 
-### 1. Start PostgreSQL
+### 1. Start PostgreSQL (or the full Docker stack)
+
+**PostgreSQL only** (run the API and web on the host):
 
 ```bash
-docker compose up -d
+docker compose up -d postgres
 ```
 
-Default DSN: `postgresql+psycopg://mdchat:mdchat@localhost:5433/mdchat`
+**API + web + PostgreSQL** (all containers; Markdown lives in the `channel_data` volume):
+
+```bash
+docker compose up --build -d
+```
+
+- UI: `http://localhost:3000`
+- API: `http://localhost:8000`
+
+When the API runs on the host against Docker Postgres, default DSN: `postgresql+psycopg://mdchat:mdchat@localhost:5433/mdchat`
+
+Optional write protection: set `MDCHAT_API_WRITE_KEY` in `.env` (and `NEXT_PUBLIC_MDCHAT_WRITE_KEY` in `apps/web/.env.local` for the stock UI). Mutating `POST`/`PATCH`/`DELETE` on `/posts` then require header `X-API-Key` with the same value. See `SECURITY.md`.
+
+AI backends: `AI_BACKEND=heuristic` (default) or `openai` (stub until you wire `OPENAI_API_KEY` in `apps/api/app/services/ai.py`).
 
 ### 2. Run the API
 
@@ -197,6 +214,8 @@ With PostgreSQL and the API running, execute `npm run test:e2e` from the repo ro
 - Channel-based chat and directory-shaped channel paths
 - Threaded replies
 - Markdown posts
+- Edit posts (PATCH) and delete whole threads (DELETE root id)
+- Optional API key on write routes
 - Keyword + lightweight vector-style search over bodies
 - Thread summarize and reply draft helpers
 - Markdown zip + JSON export

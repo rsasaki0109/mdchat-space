@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-import type { ThreadResponse } from "@/lib/types";
+import type { ThreadPost, ThreadResponse } from "@/lib/types";
 import { intlLocaleForUi } from "@/lib/ui-strings";
 import { useUiLocale } from "@/lib/ui-locale";
 
@@ -20,6 +21,8 @@ type ThreadPanelProps = {
   onReplyAuthorChange: (value: string) => void;
   onReplyBodyChange: (value: string) => void;
   onReplySubmit: () => void;
+  onUpdatePost: (postId: string, author: string, body: string) => Promise<void>;
+  onDeleteThread: () => void | Promise<void>;
 };
 
 
@@ -35,12 +38,42 @@ export function ThreadPanel({
   onReplyAuthorChange,
   onReplyBodyChange,
   onReplySubmit,
+  onUpdatePost,
+  onDeleteThread,
 }: ThreadPanelProps) {
   const { locale, t } = useUiLocale();
   const dateFormatter = new Intl.DateTimeFormat(intlLocaleForUi(locale), {
     dateStyle: "medium",
     timeStyle: "short",
   });
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editAuthor, setEditAuthor] = useState("");
+  const [editBody, setEditBody] = useState("");
+
+  function startEdit(post: ThreadPost) {
+    setEditingId(post.id);
+    setEditAuthor(post.author);
+    setEditBody(post.body);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditAuthor("");
+    setEditBody("");
+  }
+
+  async function saveEdit() {
+    if (!editingId) {
+      return;
+    }
+    try {
+      await onUpdatePost(editingId, editAuthor, editBody);
+      cancelEdit();
+    } catch {
+      /* error surfaced by parent */
+    }
+  }
 
   if (!thread) {
     return (
@@ -60,7 +93,24 @@ export function ThreadPanel({
           <h2 className="mt-2 text-xl font-semibold text-ink">{thread.root.channel}</h2>
           <p className="mt-2 text-sm text-slate-600">{t.threadPostsInConversation(thread.posts.length)}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={async () => {
+              if (typeof window !== "undefined" && !window.confirm(t.deleteThreadConfirm)) {
+                return;
+              }
+              try {
+                await onDeleteThread();
+              } catch {
+                /* error surfaced by parent */
+              }
+            }}
+            disabled={loading}
+            className="rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-700 transition hover:border-red-400 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {t.deleteThread}
+          </button>
           <button
             type="button"
             onClick={onGenerateSummary}
@@ -101,14 +151,66 @@ export function ThreadPanel({
       <div className="mt-5 space-y-3">
         {thread.posts.map((post) => (
           <article key={post.id} className="rounded-3xl border border-slate-200 bg-white/75 p-4">
-            <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.18em] text-slate-500">
-              <span>{post.author}</span>
-              <span>{dateFormatter.format(new Date(post.created_at))}</span>
-              <span>{post.markdown_path}</span>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.18em] text-slate-500">
+                <span>{post.author}</span>
+                <span>{dateFormatter.format(new Date(post.created_at))}</span>
+                <span>{post.markdown_path}</span>
+              </div>
+              {editingId !== post.id ? (
+                <button
+                  type="button"
+                  onClick={() => startEdit(post)}
+                  disabled={loading}
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-amber-400 hover:text-amber-800 disabled:cursor-not-allowed"
+                >
+                  {t.editPost}
+                </button>
+              ) : null}
             </div>
-            <div className="md-body mt-3">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.body}</ReactMarkdown>
-            </div>
+            {editingId === post.id ? (
+              <div className="mt-3 space-y-3">
+                <label className="block text-sm font-medium text-slate-700">
+                  {t.fieldAuthor}
+                  <input
+                    value={editAuthor}
+                    onChange={(event) => setEditAuthor(event.target.value)}
+                    className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 outline-none transition focus:border-amber-500"
+                  />
+                </label>
+                <label className="block text-sm font-medium text-slate-700">
+                  {t.fieldMarkdown}
+                  <textarea
+                    value={editBody}
+                    onChange={(event) => setEditBody(event.target.value)}
+                    rows={8}
+                    className="mt-2 w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 font-mono text-sm outline-none transition focus:border-amber-500"
+                  />
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={saveEdit}
+                    disabled={loading || !editAuthor.trim() || !editBody.trim()}
+                    className="rounded-full bg-slateblue px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  >
+                    {t.savePost}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancelEdit}
+                    disabled={loading}
+                    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-amber-400"
+                  >
+                    {t.cancelEdit}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="md-body mt-3">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.body}</ReactMarkdown>
+              </div>
+            )}
           </article>
         ))}
       </div>

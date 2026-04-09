@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -80,6 +80,55 @@ def build_markdown_document(
     yaml_text = yaml.safe_dump(metadata, sort_keys=False, allow_unicode=True).strip()
     clean_body = body.strip()
     return f"---\n{yaml_text}\n---\n\n{clean_body}\n"
+
+
+def rewrite_post_markdown(
+    markdown_path: str,
+    *,
+    author: str,
+    body: str,
+) -> None:
+    path = _resolve_markdown_path(markdown_path)
+    if not path.is_file():
+        raise FileNotFoundError(markdown_path)
+    raw = path.read_text(encoding="utf-8")
+    meta, _old = _split_front_matter(raw)
+    if not meta or "id" not in meta:
+        raise ValueError("markdown file missing front matter id")
+    created_raw = meta.get("timestamp")
+    if not created_raw:
+        raise ValueError("markdown missing timestamp")
+    if isinstance(created_raw, datetime):
+        created_at = created_raw
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=timezone.utc)
+    else:
+        created_at = datetime.fromisoformat(str(created_raw).replace("Z", "+00:00"))
+    channel = str(meta["channel"])
+    post_id = str(meta["id"])
+    thread_root_id = str(meta["thread_root_id"])
+    parent_raw = meta.get("parent_post_id")
+    parent_post_id: str | None
+    if parent_raw is None or parent_raw == "null" or str(parent_raw).lower() == "null":
+        parent_post_id = None
+    else:
+        parent_post_id = str(parent_raw)
+    document = build_markdown_document(
+        post_id=post_id,
+        author=author,
+        channel=channel,
+        created_at=created_at,
+        thread_root_id=thread_root_id,
+        parent_post_id=parent_post_id,
+        body=body,
+    )
+    path.write_text(document, encoding="utf-8")
+
+
+def unlink_post_markdown(markdown_path: str) -> None:
+    path = _resolve_markdown_path(markdown_path)
+    if path.is_file():
+        path.unlink()
 
 
 def write_post_markdown(

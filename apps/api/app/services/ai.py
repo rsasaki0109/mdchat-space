@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import Counter
 import re
 
+from ..config import settings
 from ..schemas import SearchHit, ThreadPost
 
 
@@ -40,7 +41,7 @@ def _leading_sentences(posts: list[ThreadPost], limit: int = 3) -> list[str]:
     return sentences
 
 
-def summarize_thread(posts: list[ThreadPost]) -> str:
+def _heuristic_summarize_thread(posts: list[ThreadPost]) -> str:
     participants = sorted({post.author for post in posts})
     keywords = _top_keywords(posts)
     highlights = _leading_sentences(posts)
@@ -67,7 +68,26 @@ def summarize_thread(posts: list[ThreadPost]) -> str:
     return "\n".join(lines)
 
 
-def generate_reply(posts: list[ThreadPost], instruction: str | None = None) -> str:
+def _openai_summarize_stub(posts: list[ThreadPost]) -> str | None:
+    if settings.ai_backend != "openai":
+        return None
+    if not settings.openai_api_key:
+        return None
+    # Wire OpenAI or another provider here; keep Markdown storage unchanged.
+    return None
+
+
+def summarize_thread(posts: list[ThreadPost]) -> str:
+    stub = _openai_summarize_stub(posts)
+    if stub is not None:
+        return stub
+    return _heuristic_summarize_thread(posts)
+
+
+def _heuristic_generate_reply(
+    posts: list[ThreadPost],
+    instruction: str | None = None,
+) -> str:
     keywords = _top_keywords(posts, limit=4)
     last_post = posts[-1] if posts else None
 
@@ -98,6 +118,21 @@ def generate_reply(posts: list[ThreadPost], instruction: str | None = None) -> s
         ]
     )
     return "\n".join(lines)
+
+
+def _openai_reply_stub(posts: list[ThreadPost], instruction: str | None) -> str | None:
+    if settings.ai_backend != "openai":
+        return None
+    if not settings.openai_api_key:
+        return None
+    return None
+
+
+def generate_reply(posts: list[ThreadPost], instruction: str | None = None) -> str:
+    stub = _openai_reply_stub(posts, instruction)
+    if stub is not None:
+        return stub
+    return _heuristic_generate_reply(posts, instruction)
 
 
 def answer_search(query: str, hits: list[SearchHit]) -> str:

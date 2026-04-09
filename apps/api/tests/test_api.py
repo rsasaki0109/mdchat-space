@@ -82,6 +82,70 @@ def test_export_md_is_zip(client):
         assert any(n.endswith(".md") for n in names)
 
 
+def test_patch_post_updates_markdown(client):
+    created = client.post(
+        "/posts",
+        json={"author": "u", "channel": "/pytest/patch", "body": "before text"},
+    ).json()
+    path = ROOT_DIR / created["markdown_path"]
+    assert "before text" in path.read_text(encoding="utf-8")
+
+    res = client.patch(
+        f"/posts/{created['id']}",
+        json={"author": "u2", "body": "after text"},
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["author"] == "u2"
+    assert data["body"] == "after text"
+    assert "after text" in path.read_text(encoding="utf-8")
+    assert "u2" in path.read_text(encoding="utf-8")
+
+
+def test_delete_thread_removes_rows_and_files(client):
+    root = client.post(
+        "/posts",
+        json={"author": "d1", "channel": "/pytest/del", "body": "root"},
+    ).json()
+    reply = client.post(
+        "/posts",
+        json={
+            "author": "d2",
+            "channel": "/pytest/del",
+            "body": "reply",
+            "parent_post_id": root["id"],
+        },
+    ).json()
+
+    root_path = ROOT_DIR / root["markdown_path"]
+    reply_path = ROOT_DIR / reply["markdown_path"]
+    assert root_path.is_file()
+    assert reply_path.is_file()
+
+    res = client.delete(f"/posts/{root['id']}")
+    assert res.status_code == 204
+
+    assert not root_path.is_file()
+    assert not reply_path.is_file()
+    assert client.get(f"/thread/{root['id']}").status_code == 404
+
+
+def test_write_key_enforced_when_configured(client, monkeypatch):
+    monkeypatch.setenv("MDCHAT_API_WRITE_KEY", "secret")
+    res = client.post(
+        "/posts",
+        json={"author": "k", "channel": "/pytest/key", "body": "x"},
+    )
+    assert res.status_code == 401
+
+    ok = client.post(
+        "/posts",
+        json={"author": "k", "channel": "/pytest/key", "body": "x"},
+        headers={"X-API-Key": "secret"},
+    )
+    assert ok.status_code == 200
+
+
 def test_ai_search_finds_post(client):
     client.post(
         "/posts",

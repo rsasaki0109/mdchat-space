@@ -4,13 +4,20 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from fastapi import HTTPException
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
 from ..models import Post
-from ..schemas import ExportedPost, PostCreate, PostSummary, ThreadPost, ThreadResponse
+from ..schemas import ExportedPost, PostCreate, PostSummary, PostUpdate, ThreadPost, ThreadResponse
 from .channels import ensure_channel_hierarchy
-from .markdown_store import excerpt_from_body, normalize_channel_path, read_post_body, write_post_markdown
+from .markdown_store import (
+    excerpt_from_body,
+    normalize_channel_path,
+    read_post_body,
+    rewrite_post_markdown,
+    unlink_post_markdown,
+    write_post_markdown,
+)
 
 
 def _utc_now() -> datetime:
@@ -77,6 +84,49 @@ def thread_post_from_model(post: Post) -> ThreadPost:
         parent_post_id=post.parent_post_id,
         markdown_path=post.markdown_path,
     )
+
+
+def update_post(session: Session, post_id: str, payload: PostUpdate) -> ThreadPost:
+    post = session.get(Post, post_id)
+    if post is None:
+        raise HTTPException(status_code=404, detail="post not found")
+
+    current_body = read_post_body(post.markdown_path)
+    new_author = payload.author if payload.author is not None else post.author
+    new_body = payload.body if payload.body is not None else current_body
+
+    try:
+        rewrite_post_markdown(post.markdown_path, author=new_author, body=new_body)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="markdown file not found") from None
+
+    post.author = new_author
+    post.excerpt = excerpt_from_body(new_body)
+    post.updated_at = _utc_now()
+    session.commit()
+    session.refresh(post)
+    return thread_post_from_model(post)
+
+
+def delete_thread(session: Session, thread_root_id: str) -> None:
+    root = session.get(Post, thread_root_id)
+    if root is None:
+        raise HTTPException(status_code=404, detail="post not found")
+    if root.parent_post_id is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="DELETE /posts/{id} expects the thread root id; use GET /thread/{any_post_id} to find it",
+        )
+
+    posts = session.scalars(select(Post).where(Post.thread_root_id == thread_root_id)).all()
+    if not posts:
+        raise HTTPException(status_code=404, detail="thread not found")
+
+    paths = [p.markdown_path for p in posts]
+    session.execute(delete(Post).where(Post.thread_root_id == thread_root_id))
+    session.commit()
+    for markdown_path in paths:
+        unlink_post_markdown(markdown_path)
 
 
 def get_channel_posts(session: Session, channel_path: str) -> list[PostSummary]:

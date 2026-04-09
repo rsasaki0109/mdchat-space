@@ -41,6 +41,8 @@ class Settings:
     export_dir: Path
     cors_origins: tuple[str, ...]
     seed_demo_data: bool
+    ai_backend: str
+    openai_api_key: str | None
 
 
 settings = Settings(
@@ -61,4 +63,6 @@ settings = Settings(
         ),
     ),
     seed_demo_data=_as_bool(os.getenv("SEED_DEMO_DATA"), True),
+    ai_backend=(os.getenv("AI_BACKEND", "heuristic").strip().lower() or "heuristic"),
+    openai_api_key=os.getenv("OPENAI_API_KEY") or None,
 )
