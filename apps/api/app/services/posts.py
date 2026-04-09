@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from ..models import Post
 from ..schemas import ExportedPost, PostCreate, PostSummary, PostUpdate, ThreadPost, ThreadResponse
 from .channels import ensure_channel_hierarchy
+from .stamps import attach_stamps_to_posts
 from .markdown_store import (
     excerpt_from_body,
     normalize_channel_path,
@@ -164,7 +165,7 @@ def get_channel_posts(session: Session, channel_path: str) -> list[PostSummary]:
     ]
 
 
-def get_thread(session: Session, thread_or_post_id: str) -> ThreadResponse:
+def get_thread(session: Session, thread_or_post_id: str, actor_key: str | None = None) -> ThreadResponse:
     seed_post = session.get(Post, thread_or_post_id)
     if seed_post is None:
         raise HTTPException(status_code=404, detail="post not found")
@@ -179,10 +180,10 @@ def get_thread(session: Session, thread_or_post_id: str) -> ThreadResponse:
         raise HTTPException(status_code=404, detail="thread not found")
 
     root = next(post for post in posts if post.id == root_id)
-    return ThreadResponse(
-        root=thread_post_from_model(root),
-        posts=[thread_post_from_model(post) for post in posts],
-    )
+    models_list = [thread_post_from_model(post) for post in posts]
+    enriched = attach_stamps_to_posts(session, models_list, actor_key)
+    root_enriched = next(post for post in enriched if post.id == root_id)
+    return ThreadResponse(root=root_enriched, posts=enriched)
 
 
 def get_all_export_posts(session: Session) -> list[ExportedPost]:

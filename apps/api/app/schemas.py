@@ -91,6 +91,44 @@ class PostSummary(BaseModel):
     parent_post_id: str | None
 
 
+class StampSummary(BaseModel):
+    stamp_id: str
+    slug: str
+    label: str
+    kind: str
+    emoji_char: str | None = None
+    image_url: str | None = None
+    count: int
+    mine: bool = False
+
+
+class StampOut(BaseModel):
+    id: str
+    slug: str
+    label: str
+    kind: str
+    emoji_char: str | None = None
+    image_url: str | None = None
+
+
+class StampToggleRequest(BaseModel):
+    stamp_id: str = Field(min_length=1)
+    actor_key: str = Field(min_length=1, max_length=128)
+
+    @field_validator("actor_key")
+    @classmethod
+    def validate_actor_key(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("actor_key must not be blank")
+        return cleaned[:64]
+
+
+class StampToggleResponse(BaseModel):
+    active: bool
+    count: int
+
+
 class ThreadPost(BaseModel):
     id: str
     author: str
@@ -101,6 +139,7 @@ class ThreadPost(BaseModel):
     thread_root_id: str
     parent_post_id: str | None
     markdown_path: str
+    stamps: list[StampSummary] = Field(default_factory=list)
 
 
 class ThreadResponse(BaseModel):

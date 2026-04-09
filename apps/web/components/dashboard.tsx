@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 
 import { api, isMdchatDemo } from "@/lib/api";
-import type { ChannelNode, PostSummary, SearchResponse, ThreadResponse } from "@/lib/types";
+import type { ChannelNode, PostSummary, SearchResponse, StampOut, ThreadResponse } from "@/lib/types";
 import { ChannelSidebar } from "@/components/channel-sidebar";
 import { Composer } from "@/components/composer";
 import { PostList } from "@/components/post-list";
@@ -13,6 +13,18 @@ import { useUiLocale } from "@/lib/ui-locale";
 
 function flattenChannels(nodes: ChannelNode[]): string[] {
   return nodes.flatMap((node) => [node.path, ...flattenChannels(node.children)]);
+}
+
+function readPersistedActorKey(): string {
+  if (typeof window === "undefined") {
+    return "";
+  }
+  let key = localStorage.getItem("mdchatActorKey");
+  if (!key) {
+    key = crypto.randomUUID();
+    localStorage.setItem("mdchatActorKey", key);
+  }
+  return key;
 }
 
 
@@ -35,6 +47,8 @@ export function Dashboard() {
   const [searchResults, setSearchResults] = useState<SearchResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [actorKey] = useState(readPersistedActorKey);
+  const [stampCatalog, setStampCatalog] = useState<StampOut[]>([]);
 
   async function loadChannels(preferredChannel?: string) {
     const tree = await api.getChannelsTree();
@@ -82,11 +96,41 @@ export function Dashboard() {
   }
 
   async function openThread(threadId: string) {
-    const response = await api.getThread(threadId);
+    const actor = actorKey.trim() || "guest";
+    const response = await api.getThread(threadId, actor);
     setThread(response);
     setSummary("");
     setReplyDraft("");
     setReplyBody("");
+  }
+
+  async function handleToggleStamp(postId: string, stampId: string) {
+    if (!thread) {
+      return;
+    }
+    setError(null);
+    try {
+      const actor = actorKey.trim() || "guest";
+      await api.togglePostStamp(postId, stampId, actor);
+      await openThread(thread.root.id);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : t.actionFailed);
+      throw caught;
+    }
+  }
+
+  async function handleCreateCustomStamp(slug: string, label: string, file: File) {
+    setError(null);
+    try {
+      await api.createImageStamp(slug, label, file);
+      setStampCatalog(await api.getStamps());
+      if (thread) {
+        await openThread(thread.root.id);
+      }
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : t.actionFailed);
+      throw caught;
+    }
   }
 
   async function refreshWorkspace(preferredChannel?: string, threadId?: string) {
@@ -105,6 +149,10 @@ export function Dashboard() {
         setError(caught instanceof Error ? caught.message : t.loadFailed);
       });
     });
+  }, []);
+
+  useEffect(() => {
+    api.getStamps().then(setStampCatalog).catch(() => setStampCatalog([]));
   }, []);
 
   async function handleCreateRootPost() {
@@ -360,6 +408,8 @@ export function Dashboard() {
 
           <ThreadPanel
             thread={thread}
+            stampsCatalog={stampCatalog}
+            actorKey={actorKey}
             summary={summary}
             replyDraft={replyDraft}
             replyAuthor={replyAuthor}
@@ -372,6 +422,8 @@ export function Dashboard() {
             onReplySubmit={() => runAction(handleCreateReply)}
             onUpdatePost={handleUpdatePost}
             onDeleteThread={handleDeleteThread}
+            onToggleStamp={(postId, stampId) => runAction(() => handleToggleStamp(postId, stampId))}
+            onCreateCustomStamp={handleCreateCustomStamp}
           />
         </section>
       </section>

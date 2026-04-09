@@ -216,3 +216,63 @@ def test_ai_search_multiword_and_global(client):
 
     global_res = client.post("/ai/search", json={"query": "alpha beta", "limit": 20}).json()
     assert len(global_res["hits"]) >= 2
+
+
+def test_thread_posts_include_stamps_array(client):
+    root = client.post(
+        "/posts",
+        json={"author": "a", "channel": "/pytest/stamps-empty", "body": "root"},
+    ).json()
+    thread = client.get(f"/thread/{root['id']}").json()
+    assert thread["root"]["stamps"] == []
+    assert all("stamps" in p for p in thread["posts"])
+
+
+def test_stamp_toggle_marks_mine_and_count(client):
+    stamps = client.get("/stamps").json()
+    thumb = next(s for s in stamps if s["slug"] == "thumbsup")
+    root = client.post(
+        "/posts",
+        json={"author": "a", "channel": "/pytest/stamps", "body": "hello"},
+    ).json()
+    r1 = client.post(
+        f"/posts/{root['id']}/stamps",
+        json={"stamp_id": thumb["id"], "actor_key": "actor-one"},
+    )
+    assert r1.status_code == 200
+    assert r1.json() == {"active": True, "count": 1}
+
+    thread = client.get(f"/thread/{root['id']}?actor=actor-one").json()
+    root_stamps = thread["root"]["stamps"]
+    assert len(root_stamps) == 1
+    assert root_stamps[0]["stamp_id"] == thumb["id"]
+    assert root_stamps[0]["count"] == 1
+    assert root_stamps[0]["mine"] is True
+
+    r2 = client.post(
+        f"/posts/{root['id']}/stamps",
+        json={"stamp_id": thumb["id"], "actor_key": "actor-one"},
+    )
+    assert r2.json() == {"active": False, "count": 0}
+
+    thread2 = client.get(f"/thread/{root['id']}?actor=actor-one").json()
+    assert thread2["root"]["stamps"] == []
+
+
+def test_create_image_stamp_writes_file(client):
+    png = bytes.fromhex(
+        "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489"
+        "0000000a49444154789c6300010000050000100d0a2db40000000049454e44ae426082"
+    )
+    files = {"file": ("x.png", BytesIO(png), "image/png")}
+    data = {"slug": "pytest-icon", "label": "Pytest"}
+    res = client.post("/stamps", files=files, data=data)
+    assert res.status_code == 200
+    body = res.json()
+    assert body["slug"] == "pytest-icon"
+    assert body["kind"] == "image"
+    assert body["image_url"] == f"/stamps/{body['id']}/image"
+
+    img = client.get(body["image_url"])
+    assert img.status_code == 200
+    assert img.content == png

@@ -4,6 +4,8 @@ import type {
   PostSummary,
   ReplyResponse,
   SearchResponse,
+  StampOut,
+  StampToggleResponse,
   SummarizeResponse,
   ThreadPost,
   ThreadResponse,
@@ -46,6 +48,22 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+async function postForm<T>(path: string, form: FormData): Promise<T> {
+  const response = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers: {
+      ...writeHeaders(),
+    },
+    body: form,
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(detail || `API request failed: ${response.status}`);
+  }
+  return response.json() as Promise<T>;
+}
+
 export function createRealApi(): MdchatApi {
   return {
     getChannelsTree() {
@@ -71,8 +89,28 @@ export function createRealApi(): MdchatApi {
         method: "DELETE",
       });
     },
-    getThread(threadId: string) {
-      return request<ThreadResponse>(`/thread/${threadId}`);
+    getThread(threadId: string, actorKey?: string | null) {
+      const q =
+        actorKey && actorKey.trim()
+          ? `?actor=${encodeURIComponent(actorKey.trim())}`
+          : "";
+      return request<ThreadResponse>(`/thread/${encodeURIComponent(threadId)}${q}`);
+    },
+    getStamps() {
+      return request<StampOut[]>("/stamps");
+    },
+    togglePostStamp(postId: string, stampId: string, actorKey: string) {
+      return request<StampToggleResponse>(`/posts/${encodeURIComponent(postId)}/stamps`, {
+        method: "POST",
+        body: JSON.stringify({ stamp_id: stampId, actor_key: actorKey }),
+      });
+    },
+    createImageStamp(slug: string, label: string, file: File) {
+      const form = new FormData();
+      form.set("slug", slug.trim());
+      form.set("label", label.trim());
+      form.set("file", file);
+      return postForm<StampOut>("/stamps", form);
     },
     summarize(threadId: string) {
       return request<SummarizeResponse>("/ai/summarize", {

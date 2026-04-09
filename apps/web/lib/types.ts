@@ -18,6 +18,31 @@ export type PostSummary = {
   parent_post_id: string | null;
 };
 
+export type StampSummary = {
+  stamp_id: string;
+  slug: string;
+  label: string;
+  kind: string;
+  emoji_char: string | null;
+  image_url: string | null;
+  count: number;
+  mine: boolean;
+};
+
+export type StampOut = {
+  id: string;
+  slug: string;
+  label: string;
+  kind: string;
+  emoji_char: string | null;
+  image_url: string | null;
+};
+
+export type StampToggleResponse = {
+  active: boolean;
+  count: number;
+};
+
 export type ThreadPost = {
   id: string;
   author: string;
@@ -28,6 +53,7 @@ export type ThreadPost = {
   thread_root_id: string;
   parent_post_id: string | null;
   markdown_path: string;
+  stamps: StampSummary[];
 };
 
 export type ThreadResponse = {

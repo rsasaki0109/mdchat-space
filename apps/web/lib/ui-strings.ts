@@ -45,6 +45,12 @@ export type UiStrings = {
   deleteThreadConfirm: string;
   demoModeBanner: string;
   demoExportsNote: string;
+  stampsHeading: string;
+  addCustomStamp: string;
+  fieldStampSlug: string;
+  fieldStampLabel: string;
+  stampPickFile: string;
+  stampUploadSubmit: string;
 };
 
 const ja: UiStrings = {
@@ -95,6 +101,12 @@ const ja: UiStrings = {
   demoModeBanner:
     "デモモード: データはこのブラウザの sessionStorage にだけ保存され、他のユーザーとは共有されません。タブを閉じると消えます。",
   demoExportsNote: "デモではエクスポートは利用できません（API サーバーなし）。",
+  stampsHeading: "スタンプ",
+  addCustomStamp: "オリジナル画像スタンプを追加",
+  fieldStampSlug: "スラッグ（英小文字・数字・ハイフン）",
+  fieldStampLabel: "表示名",
+  stampPickFile: "画像（PNG / JPEG / GIF / WebP、512KB まで）",
+  stampUploadSubmit: "スタンプを登録",
 };
 
 const en: UiStrings = {
@@ -149,6 +161,12 @@ const en: UiStrings = {
   demoModeBanner:
     "Demo: data stays in this browser (sessionStorage only). Other visitors do not see your posts. Closing the tab clears it.",
   demoExportsNote: "Exports are unavailable in the static demo (no API server).",
+  stampsHeading: "Stamps",
+  addCustomStamp: "Add custom image stamp",
+  fieldStampSlug: "Slug (lowercase letters, digits, hyphen)",
+  fieldStampLabel: "Label",
+  stampPickFile: "Image (PNG / JPEG / GIF / WebP, up to 512KB)",
+  stampUploadSubmit: "Save stamp",
 };
 
 export function getUiStrings(locale: UiLocale): UiStrings {

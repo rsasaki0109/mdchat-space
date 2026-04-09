@@ -3,6 +3,9 @@ import type {
   CreatePostPayload,
   PostSummary,
   SearchResponse,
+  StampOut,
+  StampSummary,
+  StampToggleResponse,
   SummarizeResponse,
   ThreadPost,
   ThreadResponse,
@@ -20,12 +23,75 @@ type ChannelMeta = {
   depth: number;
 };
 
-const STORAGE_KEY = "mdchat-space-demo-v3";
+const STORAGE_KEY = "mdchat-space-demo-v4";
+const LEGACY_STORAGE_KEY = "mdchat-space-demo-v3";
+
+const BUILTIN_STAMPS: StampOut[] = [
+  { id: "demo-stamp-thumbsup", slug: "thumbsup", label: "いいね", kind: "emoji", emoji_char: "👍", image_url: null },
+  { id: "demo-stamp-heart", slug: "heart", label: "ありがとう", kind: "emoji", emoji_char: "❤️", image_url: null },
+  { id: "demo-stamp-tada", slug: "tada", label: "お祝い", kind: "emoji", emoji_char: "🎉", image_url: null },
+  { id: "demo-stamp-eyes", slug: "eyes", label: "みて", kind: "emoji", emoji_char: "👀", image_url: null },
+  { id: "demo-stamp-thinking", slug: "thinking", label: "考え中", kind: "emoji", emoji_char: "🤔", image_url: null },
+];
 
 type PersistShape = {
   channels: [string, ChannelMeta][];
   posts: [string, ThreadPost][];
+  stampReactions: [string, string, string][];
+  customStamps: StampOut[];
 };
+
+type StampReactionRow = { postId: string; stampId: string; actorKey: string };
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+function normalizePostRow(raw: ThreadPost): ThreadPost {
+  return { ...raw, stamps: raw.stamps ?? [] };
+}
+
+function enrichPostsWithStamps(
+  threadPosts: ThreadPost[],
+  reactions: StampReactionRow[],
+  catalog: StampOut[],
+  actorKey: string,
+): ThreadPost[] {
+  const catalogById = new Map(catalog.map((s) => [s.id, s]));
+  return threadPosts.map((post) => {
+    const summaries: StampSummary[] = [];
+    for (const stamp of catalog) {
+      const count = reactions.filter((r) => r.postId === post.id && r.stampId === stamp.id).length;
+      if (count <= 0) {
+        continue;
+      }
+      const mine = reactions.some(
+        (r) => r.postId === post.id && r.stampId === stamp.id && r.actorKey === actorKey,
+      );
+      const def = catalogById.get(stamp.id);
+      if (!def) {
+        continue;
+      }
+      summaries.push({
+        stamp_id: stamp.id,
+        slug: def.slug,
+        label: def.label,
+        kind: def.kind,
+        emoji_char: def.emoji_char,
+        image_url: def.image_url,
+        count,
+        mine,
+      });
+    }
+    summaries.sort((a, b) => b.count - a.count || a.slug.localeCompare(b.slug));
+    return { ...post, stamps: summaries };
+  });
+}
 
 function normalizeChannel(path: string): string {
   const segments = path.split("/").map((s) => s.trim()).filter(Boolean);
@@ -50,6 +116,12 @@ function slugPath(channel: string): string {
 function createDemoApi(): MdchatApi {
   const channelRows = new Map<string, ChannelMeta>();
   const posts = new Map<string, ThreadPost>();
+  let stampReactions: StampReactionRow[] = [];
+  let customStamps: StampOut[] = [];
+
+  function stampCatalog(): StampOut[] {
+    return [...BUILTIN_STAMPS, ...customStamps];
+  }
 
   function persist(): void {
     if (typeof sessionStorage === "undefined") {
@@ -58,9 +130,12 @@ function createDemoApi(): MdchatApi {
     const payload: PersistShape = {
       channels: [...channelRows.entries()],
       posts: [...posts.entries()],
+      stampReactions: stampReactions.map((r) => [r.postId, r.stampId, r.actorKey]),
+      customStamps: [...customStamps],
     };
     try {
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      sessionStorage.removeItem(LEGACY_STORAGE_KEY);
     } catch {
       /* quota or private mode */
     }
@@ -71,22 +146,32 @@ function createDemoApi(): MdchatApi {
       return;
     }
     try {
-      const raw = sessionStorage.getItem(STORAGE_KEY);
+      const raw = sessionStorage.getItem(STORAGE_KEY) ?? sessionStorage.getItem(LEGACY_STORAGE_KEY);
       if (!raw) {
         return;
       }
-      const data = JSON.parse(raw) as PersistShape;
+      const data = JSON.parse(raw) as PersistShape & { posts?: [string, ThreadPost][] };
       channelRows.clear();
       posts.clear();
+      stampReactions = [];
+      customStamps = [];
       for (const [k, v] of data.channels ?? []) {
         channelRows.set(k, v);
       }
       for (const [k, v] of data.posts ?? []) {
-        posts.set(k, v);
+        posts.set(k, normalizePostRow(v));
       }
+      for (const row of data.stampReactions ?? []) {
+        if (row.length === 3) {
+          stampReactions.push({ postId: row[0], stampId: row[1], actorKey: row[2] });
+        }
+      }
+      customStamps = data.customStamps ?? [];
     } catch {
       channelRows.clear();
       posts.clear();
+      stampReactions = [];
+      customStamps = [];
     }
   }
 
@@ -144,6 +229,7 @@ function createDemoApi(): MdchatApi {
       thread_root_id: root1,
       parent_post_id: null,
       markdown_path: `demo/${slugPath("/general")}/${root1.slice(0, 8)}.md`,
+      stamps: [],
     };
     const p2: ThreadPost = {
       id: reply1,
@@ -157,6 +243,7 @@ function createDemoApi(): MdchatApi {
       thread_root_id: root1,
       parent_post_id: root1,
       markdown_path: `demo/${slugPath("/general")}/${reply1.slice(0, 8)}.md`,
+      stamps: [],
     };
     const p3: ThreadPost = {
       id: root2,
@@ -171,6 +258,7 @@ function createDemoApi(): MdchatApi {
       thread_root_id: root2,
       parent_post_id: null,
       markdown_path: `demo/${slugPath("/general")}/${root2.slice(0, 8)}.md`,
+      stamps: [],
     };
     const p4: ThreadPost = {
       id: root3,
@@ -187,6 +275,7 @@ function createDemoApi(): MdchatApi {
       thread_root_id: root3,
       parent_post_id: null,
       markdown_path: `demo/${slugPath("/oss/news")}/${root3.slice(0, 8)}.md`,
+      stamps: [],
     };
 
     const p5: ThreadPost = {
@@ -201,6 +290,7 @@ function createDemoApi(): MdchatApi {
       thread_root_id: root4,
       parent_post_id: null,
       markdown_path: `demo/${slugPath("/product/roadmap")}/${root4.slice(0, 8)}.md`,
+      stamps: [],
     };
 
     const p6: ThreadPost = {
@@ -215,6 +305,7 @@ function createDemoApi(): MdchatApi {
       thread_root_id: root5,
       parent_post_id: null,
       markdown_path: `demo/${slugPath("/dev/docs")}/${root5.slice(0, 8)}.md`,
+      stamps: [],
     };
 
     const p7: ThreadPost = {
@@ -228,6 +319,7 @@ function createDemoApi(): MdchatApi {
       thread_root_id: root6,
       parent_post_id: null,
       markdown_path: `demo/${slugPath("/ops/runbook")}/${root6.slice(0, 8)}.md`,
+      stamps: [],
     };
 
     const p8: ThreadPost = {
@@ -242,6 +334,7 @@ function createDemoApi(): MdchatApi {
       thread_root_id: root7,
       parent_post_id: null,
       markdown_path: `demo/${slugPath("/dev/backend")}/${root7.slice(0, 8)}.md`,
+      stamps: [],
     };
 
     for (const p of [p1, p2, p3, p4, p5, p6, p7, p8]) {
@@ -315,7 +408,7 @@ function createDemoApi(): MdchatApi {
     return roots;
   }
 
-  async function getThreadInner(threadOrPostId: string): Promise<ThreadResponse> {
+  async function getThreadInner(threadOrPostId: string, actorKey?: string | null): Promise<ThreadResponse> {
     const seedPost = posts.get(threadOrPostId);
     if (!seedPost) {
       throw new Error("post not found");
@@ -328,7 +421,13 @@ function createDemoApi(): MdchatApi {
     if (!root) {
       throw new Error("thread not found");
     }
-    return { root, posts: threadPosts };
+    const actor = (actorKey ?? "").trim();
+    const enriched = enrichPostsWithStamps(threadPosts, stampReactions, stampCatalog(), actor);
+    const rootEnriched = enriched.find((p) => p.id === rootId);
+    if (!rootEnriched) {
+      throw new Error("thread not found");
+    }
+    return { root: rootEnriched, posts: enriched };
   }
 
   return {
@@ -368,6 +467,7 @@ function createDemoApi(): MdchatApi {
         thread_root_id: threadRootId,
         parent_post_id: payload.parent_post_id ?? null,
         markdown_path: `demo/${slugPath(channelPath)}/${id.slice(0, 8)}.md`,
+        stamps: [],
       };
       posts.set(id, post);
       persist();
@@ -386,6 +486,7 @@ function createDemoApi(): MdchatApi {
         author: nextAuthor,
         body: nextBody,
         updated_at: new Date().toISOString(),
+        stamps: post.stamps ?? [],
       };
       posts.set(postId, updated);
       persist();
@@ -400,16 +501,72 @@ function createDemoApi(): MdchatApi {
       if (root.parent_post_id !== null) {
         throw new Error("DELETE expects the thread root id");
       }
+      const removeIds = new Set<string>();
       for (const [pid, p] of [...posts.entries()]) {
         if (p.thread_root_id === threadRootId) {
-          posts.delete(pid);
+          removeIds.add(pid);
         }
       }
+      for (const pid of removeIds) {
+        posts.delete(pid);
+      }
+      stampReactions = stampReactions.filter((r) => !removeIds.has(r.postId));
       persist();
     },
 
-    async getThread(threadOrPostId: string) {
-      return getThreadInner(threadOrPostId);
+    async getThread(threadOrPostId: string, actorKey?: string | null) {
+      return getThreadInner(threadOrPostId, actorKey);
+    },
+
+    async getStamps() {
+      return stampCatalog();
+    },
+
+    async togglePostStamp(postId: string, stampId: string, actorKey: string) {
+      const post = posts.get(postId);
+      if (!post) {
+        throw new Error("post not found");
+      }
+      if (!stampCatalog().some((s) => s.id === stampId)) {
+        throw new Error("stamp not found");
+      }
+      const actor = actorKey.trim() || "guest";
+      const idx = stampReactions.findIndex(
+        (r) => r.postId === postId && r.stampId === stampId && r.actorKey === actor,
+      );
+      if (idx >= 0) {
+        stampReactions.splice(idx, 1);
+      } else {
+        stampReactions.push({ postId, stampId, actorKey: actor });
+      }
+      persist();
+      const count = stampReactions.filter((r) => r.postId === postId && r.stampId === stampId).length;
+      return { active: idx < 0, count } satisfies StampToggleResponse;
+    },
+
+    async createImageStamp(slug: string, label: string, file: File) {
+      if (!/^[a-z][a-z0-9-]{1,30}$/.test(slug.trim().toLowerCase())) {
+        throw new Error("invalid slug");
+      }
+      if (stampCatalog().some((s) => s.slug === slug.trim().toLowerCase())) {
+        throw new Error("stamp slug already exists");
+      }
+      if (file.size > 512 * 1024) {
+        throw new Error("image too large");
+      }
+      const dataUrl = await fileToDataUrl(file);
+      const id = crypto.randomUUID();
+      const stamp: StampOut = {
+        id,
+        slug: slug.trim().toLowerCase(),
+        label: label.trim().slice(0, 120) || slug.trim().toLowerCase(),
+        kind: "image",
+        emoji_char: null,
+        image_url: dataUrl,
+      };
+      customStamps.push(stamp);
+      persist();
+      return stamp;
     },
 
     async summarize(threadId: string) {
@@ -424,7 +581,7 @@ function createDemoApi(): MdchatApi {
     },
 
     async reply(threadId: string, instruction?: string) {
-      const thread = await getThreadInner(threadId);
+      const thread = await getThreadInner(threadId, null);
       const last = thread.posts[thread.posts.length - 1];
       const tail = last ? `\n\n（直近: ${last.author} さんの投稿を参照）` : "";
       const hint = instruction?.trim() ? `\n\n補足: ${instruction.trim()}` : "";

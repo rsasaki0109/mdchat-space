@@ -16,7 +16,10 @@ postgres_data/
 data/channels/**/*.md
 data/channels/e2e/
 data/exports/
+data/stamps/**
+!data/stamps/.gitkeep
 test-results/
 playwright-report/
 blob-report/
 tmp/
+*.tsbuildinfo

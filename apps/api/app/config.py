@@ -39,6 +39,7 @@ class Settings:
     database_url: str
     data_dir: Path
     export_dir: Path
+    stamps_dir: Path
     cors_origins: tuple[str, ...]
     seed_demo_data: bool
     ai_backend: str
@@ -53,6 +54,7 @@ settings = Settings(
     ),
     data_dir=_resolve_path(os.getenv("DATA_DIR"), ROOT_DIR / "data" / "channels"),
     export_dir=(ROOT_DIR / "data" / "exports").resolve(),
+    stamps_dir=_resolve_path(os.getenv("STAMPS_DIR"), ROOT_DIR / "data" / "stamps"),
     cors_origins=_as_csv(
         os.getenv("CORS_ORIGINS"),
         (
