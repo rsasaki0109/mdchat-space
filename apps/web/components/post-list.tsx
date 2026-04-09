@@ -44,8 +44,8 @@ export function PostList({ posts, activeThreadId, onSelect }: PostListProps) {
                 onClick={() => onSelect(post.id)}
                 className={`w-full rounded-3xl border p-4 text-left transition ${
                   selected
-                    ? "border-amber-300 bg-amber-50"
-                    : "border-white/20 bg-white/70 hover:border-slate-200 hover:bg-white"
+                    ? "border-slate-400 bg-slate-100/90"
+                    : "border-slate-200/50 bg-white/75 hover:border-slate-300 hover:bg-white"
                 }`}
               >
                 <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.2em] text-slate-500">
@@ -54,7 +54,7 @@ export function PostList({ posts, activeThreadId, onSelect }: PostListProps) {
                   <span>{post.channel}</span>
                 </div>
                 <p className="mt-3 text-sm leading-7 text-slate-700">{post.excerpt}</p>
-                <p className="mt-4 text-xs font-medium text-amber-800">{t.postListRepliesLabel(post.reply_count)}</p>
+                <p className="mt-4 text-xs font-medium text-slate-600">{t.postListRepliesLabel(post.reply_count)}</p>
               </button>
             );
           })}

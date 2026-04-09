@@ -11,8 +11,8 @@ const config: Config = {
       colors: {
         ink: "#1f2937",
         mist: "#edf2f7",
-        paper: "#fffdf7",
-        accent: "#b45309",
+        paper: "#f8fafc",
+        accent: "#0e7490",
         pine: "#14532d",
         slateblue: "#334155",
       },

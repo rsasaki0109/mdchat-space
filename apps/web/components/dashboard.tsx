@@ -312,7 +312,7 @@ export function Dashboard() {
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{t.heroKicker}</p>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink md:text-4xl">
               {t.heroTitleLine1}
-              <span className="block text-amber-800">{t.heroTitleLine2}</span>
+              <span className="block text-slate-700">{t.heroTitleLine2}</span>
             </h1>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600 md:text-base">{t.heroBody}</p>
           </div>
@@ -334,7 +334,7 @@ export function Dashboard() {
                   href={api.exportJsonUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-amber-400 hover:text-amber-800"
+                  className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
                 >
                   Export JSON
                 </a>
@@ -354,14 +354,14 @@ export function Dashboard() {
                         runAction(handleSearch);
                       }
                     }}
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 outline-none transition focus:border-amber-500"
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 outline-none transition focus:border-slate-500"
                     placeholder={t.aiSearchPlaceholder}
                   />
                   <button
                     type="button"
                     onClick={() => runAction(handleSearch)}
                     disabled={isPending}
-                    className="rounded-full bg-amber-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-amber-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                    className="rounded-full bg-slateblue px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
                   >
                     {t.searchButton}
                   </button>
@@ -371,7 +371,7 @@ export function Dashboard() {
                     type="checkbox"
                     checked={searchAllChannels}
                     onChange={(event) => setSearchAllChannels(event.target.checked)}
-                    className="rounded border-slate-300 text-amber-700 focus:ring-amber-500"
+                    className="rounded border-slate-300 text-slate-700 focus:ring-slate-400"
                   />
                   {t.searchAllChannels}
                 </label>
@@ -393,7 +393,7 @@ export function Dashboard() {
                             await loadPosts(hit.channel);
                           })
                         }
-                        className="w-full rounded-2xl border border-slate-200 bg-white p-3 text-left transition hover:border-amber-400"
+                        className="w-full rounded-2xl border border-slate-200 bg-white p-3 text-left transition hover:border-slate-400"
                       >
                         <div className="flex items-center justify-between gap-3 text-xs uppercase tracking-[0.18em] text-slate-500">
                           <span>{hit.channel}</span>
@@ -410,7 +410,7 @@ export function Dashboard() {
         </header>
 
         {isMdchatDemo ? (
-          <div className="mb-6 rounded-2xl border border-slate-200/90 bg-white/85 px-4 py-3 text-sm leading-6 text-slate-700 shadow-[inset_0_0_0_1px_rgba(251,191,36,0.12)]">
+          <div className="mb-6 rounded-2xl border border-slate-200/90 bg-white/88 px-4 py-3 text-sm leading-6 text-slate-700 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.22)]">
             {t.demoModeBanner}
           </div>
         ) : null}

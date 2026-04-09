@@ -51,7 +51,7 @@ export function DemoDmPanel({
                 title={path}
                 disabled={disabled}
                 onClick={() => onOpenRoom(path)}
-                className="w-full rounded-xl border border-slate-200/90 bg-white px-3 py-2 text-left text-xs font-medium text-slate-800 transition hover:border-amber-400/50 hover:bg-amber-50/40 disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full rounded-xl border border-slate-200/90 bg-white px-3 py-2 text-left text-xs font-medium text-slate-800 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {roomLabel ? roomLabel(path) : shortDmLabel(path)}
               </button>

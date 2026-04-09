@@ -44,7 +44,7 @@ export function Composer({
           type="button"
           onClick={onSubmit}
           disabled={disabled}
-          className="rounded-full bg-amber-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-amber-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+          className="rounded-full bg-slateblue px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
         >
           {submitLabel}
         </button>
@@ -56,7 +56,7 @@ export function Composer({
           <input
             value={author}
             onChange={(event) => onAuthorChange(event.target.value)}
-            className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 outline-none transition focus:border-amber-500"
+            className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 outline-none transition focus:border-slate-500"
             placeholder={t.authorPlaceholder}
           />
         </label>
@@ -67,7 +67,7 @@ export function Composer({
             value={channel}
             onChange={(event) => onChannelChange(event.target.value)}
             readOnly={disableChannelEdit}
-            className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 outline-none transition focus:border-amber-500 read-only:bg-slate-100"
+            className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 outline-none transition focus:border-slate-500 read-only:bg-slate-100"
             placeholder="/general"
           />
         </label>
@@ -79,7 +79,7 @@ export function Composer({
           value={body}
           onChange={(event) => onBodyChange(event.target.value)}
           rows={8}
-          className="mt-2 w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 font-mono text-sm outline-none transition focus:border-amber-500"
+          className="mt-2 w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 font-mono text-sm outline-none transition focus:border-slate-500"
           placeholder={t.bodyPlaceholder}
         />
       </label>

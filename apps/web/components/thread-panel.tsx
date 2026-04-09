@@ -146,7 +146,7 @@ export function ThreadPanel({
             type="button"
             onClick={onGenerateSummary}
             disabled={loading}
-            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-amber-400 hover:text-amber-800 disabled:cursor-not-allowed"
+            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed"
           >
             {t.summarize}
           </button>
@@ -154,7 +154,7 @@ export function ThreadPanel({
             type="button"
             onClick={onGenerateReply}
             disabled={loading}
-            className="rounded-full bg-pine px-4 py-2 text-sm font-medium text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="rounded-full bg-slateblue px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
           >
             {t.generateReply}
           </button>
@@ -193,7 +193,7 @@ export function ThreadPanel({
                   type="button"
                   onClick={() => startEdit(post)}
                   disabled={loading}
-                  className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-amber-400 hover:text-amber-800 disabled:cursor-not-allowed"
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed"
                 >
                   {t.editPost}
                 </button>
@@ -206,7 +206,7 @@ export function ThreadPanel({
                   <input
                     value={editAuthor}
                     onChange={(event) => setEditAuthor(event.target.value)}
-                    className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 outline-none transition focus:border-amber-500"
+                    className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 outline-none transition focus:border-slate-500"
                   />
                 </label>
                 <label className="block text-sm font-medium text-slate-700">
@@ -215,7 +215,7 @@ export function ThreadPanel({
                     value={editBody}
                     onChange={(event) => setEditBody(event.target.value)}
                     rows={8}
-                    className="mt-2 w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 font-mono text-sm outline-none transition focus:border-amber-500"
+                    className="mt-2 w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 font-mono text-sm outline-none transition focus:border-slate-500"
                   />
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -231,7 +231,7 @@ export function ThreadPanel({
                     type="button"
                     onClick={cancelEdit}
                     disabled={loading}
-                    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-amber-400"
+                    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400"
                   >
                     {t.cancelEdit}
                   </button>
@@ -254,8 +254,8 @@ export function ThreadPanel({
                     onClick={() => void onToggleStamp(post.id, s.stamp_id)}
                     className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm transition ${
                       s.mine
-                        ? "border-amber-400 bg-amber-50 text-amber-900"
-                        : "border-slate-200 bg-white text-slate-700 hover:border-amber-300"
+                        ? "border-slate-500 bg-slate-100 text-slate-900"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
                     } disabled:cursor-not-allowed disabled:opacity-50`}
                   >
                     {s.kind === "emoji" && s.emoji_char ? (
@@ -286,7 +286,7 @@ export function ThreadPanel({
                       onClick={() => void onToggleStamp(post.id, st.id)}
                       className={`flex h-9 min-w-[2.25rem] items-center justify-center rounded-xl border px-2 text-base transition ${
                         pressed
-                          ? "border-amber-500 bg-amber-50 shadow-sm"
+                          ? "border-slate-500 bg-slate-100 shadow-sm"
                           : "border-slate-200 bg-white hover:border-slate-400"
                       } disabled:cursor-not-allowed disabled:opacity-50`}
                     >
@@ -317,7 +317,7 @@ export function ThreadPanel({
               onChange={(e) => setCustomSlug(e.target.value.toLowerCase())}
               pattern="^[a-z][a-z0-9-]{1,30}$"
               required
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 font-mono text-sm outline-none transition focus:border-amber-500"
+              className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 font-mono text-sm outline-none transition focus:border-slate-500"
               placeholder="team-logo"
             />
           </label>
@@ -326,7 +326,7 @@ export function ThreadPanel({
             <input
               value={customLabel}
               onChange={(e) => setCustomLabel(e.target.value)}
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-amber-500"
+              className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-slate-500"
             />
           </label>
           <label className="text-sm font-medium text-slate-700">
@@ -356,7 +356,7 @@ export function ThreadPanel({
             <input
               value={replyAuthor}
               onChange={(event) => onReplyAuthorChange(event.target.value)}
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 outline-none transition focus:border-amber-500"
+              className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 outline-none transition focus:border-slate-500"
             />
           </label>
           <label className="text-sm font-medium text-slate-700">
@@ -365,7 +365,7 @@ export function ThreadPanel({
               value={replyBody}
               onChange={(event) => onReplyBodyChange(event.target.value)}
               rows={8}
-              className="mt-2 w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 font-mono text-sm outline-none transition focus:border-amber-500"
+              className="mt-2 w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 font-mono text-sm outline-none transition focus:border-slate-500"
             />
           </label>
           <button

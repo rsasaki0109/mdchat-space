@@ -9,11 +9,12 @@
 body {
   min-height: 100vh;
   color: #1f2937;
-  /* ニュートラル基調 + ごく弱い暖色／スレート（緑汎光は撤去してトーンを統一） */
+  /* クール系: 暖色なし。スレート＋ごく弱いインディゴのシアトーン */
   background:
-    radial-gradient(ellipse 130% 90% at 20% -15%, rgba(254, 252, 232, 0.85), transparent 52%),
-    radial-gradient(ellipse 100% 70% at 95% 5%, rgba(241, 245, 249, 0.9), transparent 48%),
-    linear-gradient(165deg, #fafaf9 0%, #f4f4f5 38%, #f1f5f9 100%);
+    radial-gradient(ellipse 115% 85% at 5% -8%, rgba(224, 231, 255, 0.38), transparent 52%),
+    radial-gradient(ellipse 100% 75% at 98% 0%, rgba(226, 232, 240, 0.65), transparent 48%),
+    radial-gradient(ellipse 90% 60% at 50% 108%, rgba(203, 213, 225, 0.22), transparent 46%),
+    linear-gradient(185deg, #f8fafc 0%, #f1f5f9 42%, #e9eff5 100%);
 }
 
 * {
@@ -21,7 +22,7 @@ body {
 }
 
 .panel {
-  @apply rounded-3xl border border-white/60 bg-paper/90 shadow-card backdrop-blur;
+  @apply rounded-3xl border border-slate-200/60 bg-white/[0.92] shadow-card backdrop-blur;
 }
 
 .panel-muted {
@@ -60,7 +61,7 @@ body {
 }
 
 .md-body code {
-  @apply rounded bg-amber-100 px-1.5 py-0.5 font-mono text-xs text-amber-900;
+  @apply rounded bg-slate-200/80 px-1.5 py-0.5 font-mono text-xs text-slate-800;
 }
 
 .md-body pre {

@@ -30,7 +30,7 @@ function ChannelBranch({
         onClick={() => onSelect(node.path)}
         className={`flex w-full items-center justify-between rounded-2xl px-3 py-2 text-left transition ${
           selected
-            ? "bg-amber-100 text-amber-900"
+            ? "bg-slate-200/80 text-slate-900"
             : "bg-white/60 text-slateblue hover:bg-white"
         }`}
       >
