@@ -2,7 +2,6 @@ import type {
   ChannelNode,
   CreatePostPayload,
   PostSummary,
-  SearchHit,
   SearchResponse,
   SummarizeResponse,
   ThreadPost,
@@ -11,6 +10,7 @@ import type {
 } from "@/lib/types";
 
 import type { MdchatApi } from "./api-types";
+import { rankPostsForSearch } from "./demo-search";
 
 
 type ChannelMeta = {
@@ -374,37 +374,20 @@ function createDemoApi(): MdchatApi {
       return { thread_id: thread.root.id, reply: text };
     },
 
-    async search(query: string, channel?: string) {
-      const q = query.trim().toLowerCase();
+    async search(query: string, channel?: string | null, limit = 24) {
+      const q = query.trim();
       if (!q) {
         return { query, answer: "", hits: [] };
       }
       const chFilter = channel?.trim() ? normalizeChannel(channel) : null;
-      const hits: SearchHit[] = [];
-      for (const p of posts.values()) {
-        if (chFilter && !(p.channel === chFilter || p.channel.startsWith(`${chFilter}/`))) {
-          continue;
-        }
-        if (!p.body.toLowerCase().includes(q)) {
-          continue;
-        }
-        hits.push({
-          post_id: p.id,
-          channel: p.channel,
-          author: p.author,
-          created_at: p.created_at,
-          excerpt: excerptFromBody(p.body),
-          score: 0.9 - hits.length * 0.05,
-        });
-        if (hits.length >= 5) {
-          break;
-        }
-      }
+      const allPosts = [...posts.values()];
+      const hits = rankPostsForSearch(q, allPosts, chFilter, limit);
+      const lead = hits[0];
       const answer =
         hits.length === 0
-          ? "該当が見つかりませんでした（デモの簡易検索です）。"
-          : `デモ検索: 「${query}」に一致する投稿が ${hits.length} 件あります。`;
-      return { query, answer, hits };
+          ? "該当が見つかりませんでした。別の言い回しや全チャンネル検索を試してください。"
+          : `「${q}」で ${hits.length} 件ヒットしました。${lead ? `先頭スコア ${lead.score}（${lead.channel}）。` : ""}`;
+      return { query: q, answer, hits };
     },
 
     exportMarkdownUrl: "",

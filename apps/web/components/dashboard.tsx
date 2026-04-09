@@ -31,6 +31,7 @@ export function Dashboard() {
   const [summary, setSummary] = useState("");
   const [replyDraft, setReplyDraft] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchAllChannels, setSearchAllChannels] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -193,7 +194,8 @@ export function Dashboard() {
     }
 
     setError(null);
-    const results = await api.search(searchQuery, selectedChannel);
+    const scope = searchAllChannels ? null : selectedChannel;
+    const results = await api.search(searchQuery.trim(), scope);
     setSearchResults(results);
   }
 
@@ -249,6 +251,12 @@ export function Dashboard() {
                   <input
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        runAction(handleSearch);
+                      }
+                    }}
                     className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 outline-none transition focus:border-amber-500"
                     placeholder={t.aiSearchPlaceholder}
                   />
@@ -261,6 +269,15 @@ export function Dashboard() {
                     {t.searchButton}
                   </button>
                 </div>
+                <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm text-slate-600">
+                  <input
+                    type="checkbox"
+                    checked={searchAllChannels}
+                    onChange={(event) => setSearchAllChannels(event.target.checked)}
+                    className="rounded border-slate-300 text-amber-700 focus:ring-amber-500"
+                  />
+                  {t.searchAllChannels}
+                </label>
               </label>
 
               {searchResults ? (

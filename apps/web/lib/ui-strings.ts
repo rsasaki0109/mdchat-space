@@ -8,6 +8,7 @@ export type UiStrings = {
   aiSearchLabel: string;
   aiSearchPlaceholder: string;
   searchButton: string;
+  searchAllChannels: string;
   loadFailed: string;
   actionFailed: string;
   composerTitle: string;
@@ -55,6 +56,7 @@ const ja: UiStrings = {
   aiSearchLabel: "AI 検索",
   aiSearchPlaceholder: "GNSS の誤差, ログ保存, 方針整理...",
   searchButton: "検索",
+  searchAllChannels: "全チャンネルで検索",
   loadFailed: "初期ロードに失敗しました。",
   actionFailed: "操作に失敗しました。",
   composerTitle: "新しい投稿",
@@ -104,6 +106,7 @@ const en: UiStrings = {
   aiSearchLabel: "AI search",
   aiSearchPlaceholder: "GNSS errors, log retention, planning...",
   searchButton: "Search",
+  searchAllChannels: "Search all channels",
   loadFailed: "Failed to load the workspace.",
   actionFailed: "Something went wrong.",
   composerTitle: "New post",

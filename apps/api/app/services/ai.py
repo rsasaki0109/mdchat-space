@@ -137,11 +137,12 @@ def generate_reply(posts: list[ThreadPost], instruction: str | None = None) -> s
 
 def answer_search(query: str, hits: list[SearchHit]) -> str:
     if not hits:
-        return "該当する Markdown 投稿が見つかりませんでした。キーワードを増やすか、対象チャンネルを広げて再検索してください。"
+        return "該当する Markdown 投稿が見つかりませんでした。別の語に分ける・表記を変える（ひらがな／カタカナ）・チャンネル範囲を広げて再検索してください。"
 
     lead = hits[0]
-    channels = ", ".join(sorted({hit.channel for hit in hits[:3]}))
+    channels = ", ".join(sorted({hit.channel for hit in hits[:5]}))
+    score_note = f"（先頭の一致度スコア {lead.score:.2f}）"
     return (
-        f"`{query}` に近い投稿は `{lead.channel}` を中心に見つかりました。"
-        f" 上位 {len(hits)} 件の傾向としては {channels} に関連議論があり、まずは先頭ヒットから読むのが最短です。"
+        f"「{query}」に関連しそうな投稿を {len(hits)} 件列挙しました。{score_note} "
+        f"主に `{lead.channel}` ほか {channels} にヒットがあります。一覧からスレに飛んで本文を確認してください。"
     )

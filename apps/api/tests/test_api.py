@@ -163,4 +163,40 @@ def test_ai_search_finds_post(client):
     data = res.json()
     assert data["query"] == "unique_snippet_ragtest"
     assert len(data["hits"]) >= 1
-    assert any("unique_snippet_ragtest" in h.get("excerpt", "") for h in data["hits"])
+    assert any("unique_snippet_ragtest" in h.get("excerpt", "").lower() for h in data["hits"])
+
+
+def test_ai_search_partial_substring(client):
+    client.post(
+        "/posts",
+        json={
+            "author": "s",
+            "channel": "/pytest/substr",
+            "body": "prefix UNIQUE_MIDDLE_SUFFIX tail for substring search",
+        },
+    )
+    res = client.post("/ai/search", json={"query": "MIDDLE_SUFFIX", "channel": "/pytest"})
+    assert res.status_code == 200
+    hits = res.json()["hits"]
+    assert len(hits) >= 1
+    assert any("UNIQUE" in h.get("excerpt", "") for h in hits)
+
+
+def test_ai_search_multiword_and_global(client):
+    client.post(
+        "/posts",
+        json={"author": "a", "channel": "/pytest/mw/a", "body": "alpha beta gamma only in a"},
+    )
+    client.post(
+        "/posts",
+        json={"author": "b", "channel": "/pytest/mw/b", "body": "alpha beta gamma only in b"},
+    )
+    scoped = client.post(
+        "/ai/search",
+        json={"query": "alpha beta", "channel": "/pytest/mw/a"},
+    ).json()["hits"]
+    assert len(scoped) >= 1
+    assert all("a" in h["channel"] for h in scoped)
+
+    global_res = client.post("/ai/search", json={"query": "alpha beta", "limit": 20}).json()
+    assert len(global_res["hits"]) >= 2

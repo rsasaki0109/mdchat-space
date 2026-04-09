@@ -20,7 +20,7 @@ export type MdchatApi = {
   getThread(threadId: string): Promise<ThreadResponse>;
   summarize(threadId: string): Promise<SummarizeResponse>;
   reply(threadId: string, instruction?: string): Promise<ReplyResponse>;
-  search(query: string, channel?: string): Promise<SearchResponse>;
+  search(query: string, channel?: string | null, limit?: number): Promise<SearchResponse>;
   exportMarkdownUrl: string;
   exportJsonUrl: string;
 };

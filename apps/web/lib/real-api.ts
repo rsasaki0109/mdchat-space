@@ -86,10 +86,10 @@ export function createRealApi(): MdchatApi {
         body: JSON.stringify({ thread_id: threadId, instruction }),
       });
     },
-    search(query: string, channel?: string) {
+    search(query: string, channel?: string | null, limit = 24) {
       return request<SearchResponse>("/ai/search", {
         method: "POST",
-        body: JSON.stringify({ query, channel, limit: 5 }),
+        body: JSON.stringify({ query, channel: channel ?? null, limit }),
       });
     },
     exportMarkdownUrl: `${API_BASE}/export/md`,
